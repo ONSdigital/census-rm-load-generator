@@ -1,0 +1,2 @@
+class RabbitConnectionClosedError(Exception):
+    pass
