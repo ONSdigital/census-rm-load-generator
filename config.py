@@ -21,3 +21,5 @@ class Config:
     QM_UNDELIVERED_PROJECT_ID = os.getenv("QM_UNDELIVERED_PROJECT_ID",
                                           "qm-undelivered-project")
     CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "50")
+    MESSAGE_RATE = os.getenv("MESSAGE_RATE", "1000")  # Messages per second
+    TOTAL_MESSAGES_TO_SEND = os.getenv("TOTAL_MESSAGES_TO_SEND", "10000")

@@ -10,7 +10,7 @@ from config import Config
 from utilities.db_helper import execute_sql_query
 from utilities.rabbit_context import RabbitContext
 
-message_rate = 1000  # Per second
+message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_weightings = {
     "RESPONDENT_AUTHENTICATED": 37,
     "SURVEY_LAUNCHED": 35,
@@ -23,7 +23,7 @@ message_type_randomiser = []
 
 test_cases = []
 
-total_messages_to_send = 10000
+total_messages_to_send = int(Config.TOTAL_MESSAGES_TO_SEND)
 messages_to_send = []
 
 
@@ -235,7 +235,7 @@ def prepare_undelivered_mail_reported(random_delay, random_case):
 def prepare_messages_to_be_sent():
     for _ in range(total_messages_to_send):
         random_message_type = message_type_randomiser[random.randint(0, len(message_type_randomiser) - 1)]
-        random_delay = float(random.randint(0, 1000 / message_rate)) / 1000.0
+        random_delay = float(random.randint(0, int(1000 / message_rate))) / 1000.0  # In seconds
         random_case = test_cases[random.randint(0, len(test_cases) - 1)]
 
         if random_message_type == 'RESPONDENT_AUTHENTICATED':
@@ -258,22 +258,16 @@ def send_rabbit_message(rabbit, message):
 
 def send_pubsub_eq_receipt_message(publisher, message):
     topic_path = publisher.topic_path(message['project'], message['topic'])
-    future = publisher.publish(topic_path,
+    publisher.publish(topic_path,
                                data=message['message_body'].encode('utf-8'),
                                eventType='OBJECT_FINALIZE',
                                bucketId='eq-bucket',
                                objectId=message['tx_id'])
-    future.add_done_callback(pubsub_message_callback)
 
 
 def send_pubsub_message(publisher, message):
     topic_path = publisher.topic_path(message['project'], message['topic'])
-    future = publisher.publish(topic_path, data=message['message_body'].encode('utf-8'))
-    future.add_done_callback(pubsub_message_callback)
-
-
-def pubsub_message_callback(result):
-    pass
+    publisher.publish(topic_path, data=message['message_body'].encode('utf-8'))
 
 
 def send_the_messages():
