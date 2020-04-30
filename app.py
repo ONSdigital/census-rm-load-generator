@@ -259,10 +259,10 @@ def send_rabbit_message(rabbit, message):
 def send_pubsub_eq_receipt_message(publisher, message):
     topic_path = publisher.topic_path(message['project'], message['topic'])
     publisher.publish(topic_path,
-                               data=message['message_body'].encode('utf-8'),
-                               eventType='OBJECT_FINALIZE',
-                               bucketId='eq-bucket',
-                               objectId=message['tx_id'])
+                      data=message['message_body'].encode('utf-8'),
+                      eventType='OBJECT_FINALIZE',
+                      bucketId='eq-bucket',
+                      objectId=message['tx_id'])
 
 
 def send_pubsub_message(publisher, message):
@@ -286,7 +286,6 @@ def send_the_messages():
 
 
 def main():
-
     prepare_randomiser()
 
     print("Preparing the data...")
