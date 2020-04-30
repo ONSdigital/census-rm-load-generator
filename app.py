@@ -4,7 +4,6 @@ import time
 import uuid
 from datetime import datetime
 
-from google.api_core.exceptions import GoogleAPIError
 from google.cloud import pubsub_v1
 
 from config import Config
