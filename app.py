@@ -264,25 +264,17 @@ def send_pubsub_eq_receipt_message(publisher, message):
                                eventType='OBJECT_FINALIZE',
                                bucketId='eq-bucket',
                                objectId=message['tx_id'])
-
-    if not future.done():
-        time.sleep(0.001)
-    try:
-        future.result(timeout=0.1)
-    except GoogleAPIError:
-        pass
+    future.add_done_callback(pubsub_message_callback)
 
 
 def send_pubsub_message(publisher, message):
     topic_path = publisher.topic_path(message['project'], message['topic'])
     future = publisher.publish(topic_path, data=message['message_body'].encode('utf-8'))
+    future.add_done_callback(pubsub_message_callback)
 
-    if not future.done():
-        time.sleep(0.001)
-    try:
-        future.result(timeout=0.1)
-    except GoogleAPIError:
-        pass
+
+def pubsub_message_callback(result):
+    pass
 
 
 def send_the_messages():
