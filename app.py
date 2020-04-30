@@ -235,7 +235,7 @@ def prepare_undelivered_mail_reported(random_delay, random_case):
 def prepare_messages_to_be_sent():
     for _ in range(total_messages_to_send):
         random_message_type = message_type_randomiser[random.randint(0, len(message_type_randomiser) - 1)]
-        random_delay = float(random.randint(0, int(1000 / message_rate))) / 1000.0  # In seconds
+        random_delay = random.random() / message_rate  # In seconds
         random_case = test_cases[random.randint(0, len(test_cases) - 1)]
 
         if random_message_type == 'RESPONDENT_AUTHENTICATED':
