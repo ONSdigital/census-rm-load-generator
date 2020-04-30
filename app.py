@@ -286,9 +286,10 @@ def send_the_messages():
 
 
 def main():
-    print('Running load test...')
 
     prepare_randomiser()
+
+    print("Preparing the data...")
 
     # Load a bunch of cases from the DB
     get_cases_from_db()
@@ -297,6 +298,7 @@ def main():
     prepare_messages_to_be_sent()
 
     # Send the Rabbit & Pubsub messages on separate threads
+    print('Running load test...')
     send_the_messages()
 
     # Done!
