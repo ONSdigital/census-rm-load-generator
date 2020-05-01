@@ -23,10 +23,24 @@ spec:
         env: dev
         version: "0.1.0dev"
     spec:
+      securityContext:
+        fsGroup: 1000
       containers:
         - name: load-generator
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    cp /home/loadgenerator/postgresql/* /home/loadgenerator/.postgresql &&
+                    chmod 0600 /home/loadgenerator/.postgresql/postgresql.key
+                    # the above is a workaround to get round the permissions as currently we cant mount it without doing this
           image: eu.gcr.io/census-rm-ci/rm/census-rm-load-generator:latest
           imagePullPolicy: Always
+          tty: true
+          stdin: true
           resources:
             requests:
               cpu: "0.5"
@@ -37,6 +51,9 @@ spec:
           volumeMounts:
             - name: gcp-credentials-volume
               mountPath: /gcp-credentials
+            - name: cloud-sql-certs
+              mountPath: "/home/loadgenerator/postgresql"
+              readOnly: true
           env:
             - name: RECEIPT_TOPIC_ID
               valueFrom:
@@ -83,22 +100,22 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: db-host
-                  name: db-read-replica-config
+                  name: db-config
             - name: DB_PORT
               valueFrom:
                 configMapKeyRef:
                   key: db-port
-                  name: db-read-replica-config
+                  name: db-config
             - name: DB_NAME
               valueFrom:
                 configMapKeyRef:
                   key: db-name
-                  name: db-read-replica-config
+                  name: db-config
       volumes:
         - name: gcp-credentials-volume
           secret:
             secretName: pubsub-credentials
-        - name: read-replica-cloud-sql-certs
+        - name: cloud-sql-certs
           secret:
             defaultMode: 256
             items:
@@ -108,4 +125,4 @@ spec:
               path: postgresql.crt
             - key: postgresql.key
               path: postgresql.key
-            secretName: read-replica-cloud-sql-certs
+            secretName: cloud-sql-certs
