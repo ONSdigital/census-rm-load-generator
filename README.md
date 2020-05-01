@@ -5,4 +5,8 @@ Performance testing simulated load generator
 Run: `PUBSUB_EMULATOR_HOST=localhost:8538 pipenv run python app.py`
 
 ## How to run (in GCP)
-TBC
+Run:
+
+1. `make apply-deployment`
+2. `connect-to-pod`
+3. `python app.py`
