@@ -17,4 +17,4 @@ apply-deployment:
 	kubectl apply -f load-generator-deployment.yml
 
 connect-to-pod:
-	 kubctl exec -it $(kubectl get pods --selector=app=load-generator -o jsonpath='{.items[*].metadata.name}') -- /bin/bash
+	kubectl exec -it $(kubectl get pods --selector=app=load-generator -o jsonpath='{.items[*].metadata.name}') -- /bin/bash
