@@ -2,7 +2,8 @@ install:
 	pipenv install --dev
 
 package_vulnerability:
-	pipenv check
+# uncomment this when the api key bug is fixed
+# 	pipenv check
 
 flake:
 	pipenv run flake8 .
