@@ -9,4 +9,6 @@ COPY Pipfile* /home/loadgenerator/
 RUN pipenv install --system --deploy
 USER loadgenerator
 
+RUN mkdir /home/loadgenerator/.postgresql
+
 COPY --chown=loadgenerator . /home/loadgenerator

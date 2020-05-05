@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-generator
+  labels:
+    app: load-generator
+    env: dev
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: load-generator
+  template:
+    metadata:
+      name: load-generator
+      labels:
+        app: load-generator
+        env: dev
+        version: "0.1.0dev"
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: load-generator
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    cp /home/loadgenerator/postgresql/* /home/loadgenerator/.postgresql &&
+                    chmod 0600 /home/loadgenerator/.postgresql/postgresql.key
+                    # the above is a workaround to get round the permissions as currently we cant mount it without doing this
+          image: eu.gcr.io/census-rm-ci/rm/census-rm-load-generator:latest
+          imagePullPolicy: Always
+          tty: true
+          stdin: true
+          resources:
+            requests:
+              cpu: "0.5"
+              memory: "2Gi"
+            limits:
+              cpu: "0.5"
+              memory: "2Gi"
+          volumeMounts:
+            - name: gcp-credentials-volume
+              mountPath: /gcp-credentials
+            - name: cloud-sql-certs
+              mountPath: "/home/loadgenerator/postgresql"
+              readOnly: true
+          env:
+            - name: RECEIPT_TOPIC_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: receipt-topic-name
+            - name: RECEIPT_TOPIC_PROJECT
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: subscription-project-id
+            - name: QM_UNDELIVERED_PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: project-config
+                  key: project-name
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/gcp-credentials/service-account-key.json"
+            - name: RABBIT_HOST
+              value: "rabbitmq"
+            - name: RABBIT_PORT
+              value: "5672"
+            - name: RABBIT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-username
+            - name: RABBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq
+                  key: rabbitmq-password
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: db-credentials
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: db-credentials
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: db-host
+                  name: db-config
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: db-port
+                  name: db-config
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: db-name
+                  name: db-config
+      volumes:
+        - name: gcp-credentials-volume
+          secret:
+            secretName: pubsub-credentials
+        - name: cloud-sql-certs
+          secret:
+            defaultMode: 256
+            items:
+            - key: root.crt
+              path: root.crt
+            - key: postgresql.crt
+              path: postgresql.crt
+            - key: postgresql.key
+              path: postgresql.key
+            secretName: cloud-sql-certs
