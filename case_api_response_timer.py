@@ -54,7 +54,6 @@ def call_the_api():
                 results_file.write(f'{datetime.now().isoformat()},{total_time},\n')
             except requests.exceptions.HTTPError as errh:
                 results_file.write(f'{datetime.now().isoformat()},{total_time},"Http Error: {errh}"\n')
-                print("Http Error:", errh)
             except requests.exceptions.ConnectionError as errc:
                 results_file.write(f'{datetime.now().isoformat()},{total_time},"Error Connecting: {errc}"\n')
             except requests.exceptions.Timeout as errt:
