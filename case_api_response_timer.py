@@ -37,7 +37,7 @@ def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
 
 
 def call_the_api():
-    with open('results.csv', 'w') as results_file:
+    with open(f'case-api-results-{datetime.now().isoformat()}.csv', 'w') as results_file:
         for _ in range(total_api_calls):
             random_delay = random.random() / api_call_rate  # In seconds
             random_case = test_cases[random.randint(0, len(test_cases) - 1)]
