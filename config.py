@@ -22,3 +22,6 @@ class Config:
     CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "50")
     MESSAGE_RATE = os.getenv("MESSAGE_RATE", "1000")  # Messages per second
     TOTAL_MESSAGES_TO_SEND = os.getenv("TOTAL_MESSAGES_TO_SEND", "10000")
+    API_CALL_RATE = os.getenv("API_CALL_RATE", "1000")  # Calls per second
+    TOTAL_API_CALLS = os.getenv("TOTAL_API_CALLS", "10000")
+    CASE_API_URL = os.getenv("CASE_API_URL", "http://case-api:80")
