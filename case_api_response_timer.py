@@ -44,21 +44,25 @@ def call_the_api():
 
             time.sleep(random_delay)
 
-            start_time = time.time()
-            response = requests.get(
-                f"{Config.CASE_API_URL}/cases/{random_case['case_id']}?caseEvents=true")
-            total_time = int(round((time.time() - start_time) * 1000))  # In milliseconds
-
             try:
+                start_time = time.time()
+                response = requests.get(
+                    f"{Config.CASE_API_URL}/cases/{random_case['case_id']}")
+                total_time = int(round((time.time() - start_time) * 1000))  # In milliseconds
+
                 response.raise_for_status()
                 results_file.write(f'{datetime.now().isoformat()},{total_time},\n')
             except requests.exceptions.HTTPError as errh:
+                total_time = int(round((time.time() - start_time) * 1000))  # In milliseconds
                 results_file.write(f'{datetime.now().isoformat()},{total_time},"Http Error: {errh}"\n')
             except requests.exceptions.ConnectionError as errc:
+                total_time = int(round((time.time() - start_time) * 1000))  # In milliseconds
                 results_file.write(f'{datetime.now().isoformat()},{total_time},"Error Connecting: {errc}"\n')
             except requests.exceptions.Timeout as errt:
+                total_time = int(round((time.time() - start_time) * 1000))  # In milliseconds
                 results_file.write(f'{datetime.now().isoformat()},{total_time},"Timeout Error: {errt}"\n')
             except requests.exceptions.RequestException as err:
+                total_time = int(round((time.time() - start_time) * 1000))  # In milliseconds
                 results_file.write(f'{datetime.now().isoformat()},{total_time},"Other Error: {err}"\n')
 
 
