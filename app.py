@@ -325,7 +325,7 @@ def prepare_fulfilment_requested_print(random_delay, random_case):
 def prepare_fulfilment_confirmed(random_delay, random_case):
     message_contents = {
         "dateTime": f"{datetime.utcnow().isoformat()}Z",
-        "caseRef": random_case['case_ref'],
+        "caseRef": str(random_case['case_ref']),
         "productCode": "P_OR_H1",
         "channel": "PPO",
         "type": "FULFILMENT_CONFIRMED",
