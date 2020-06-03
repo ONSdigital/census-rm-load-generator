@@ -12,12 +12,21 @@ from utilities.rabbit_context import RabbitContext
 
 message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_weightings = {
-    "RESPONDENT_AUTHENTICATED": 37,
-    "SURVEY_LAUNCHED": 35,
-    "RESPONSE_RECEIVED": 20,
-    "REFUSAL_RECEIVED": 5,
-    "FULFILMENT_REQUESTED": 2,
-    "UNDELIVERED_MAIL_REPORTED": 1
+    "RESPONDENT_AUTHENTICATED": 36,
+    "SURVEY_LAUNCHED": 34,
+    "RESPONSE_RECEIVED": 18,
+    "REFUSAL_RECEIVED": 1,
+    "FULFILMENT_REQUESTED_SMS": 1,
+    "FULFILMENT_REQUESTED_PRINT": 1,
+    "UNDELIVERED_MAIL_REPORTED": 1,
+    "FULFILMENT_CONFIRMED": 1,
+    "NEW_ADDRESS_REPORTED": 1,
+    "ADDRESS_NOT_VALID": 1,
+    "ADDRESS_TYPE_CHANGED": 1,
+    "ADDRESS_MODIFIED": 1,
+    "PRINT_CASE_SELECTED": 1,
+    "OFFLINE_RECEIPT_PPO": 1,
+    "OFFLINE_RECEIPT_QM": 1
 }
 message_type_randomiser = []
 
@@ -136,6 +145,76 @@ def prepare_response_received(random_delay, random_case):
     messages_to_send.append(message)
 
 
+def prepare_response_received_pqrs(random_delay, random_case):
+    tx_id = str(uuid.uuid4())
+
+    message_contents = {
+        "channel": "PQRS",
+        "dateTime": f"{datetime.utcnow().isoformat()}Z",
+        "questionnaireId": random_case['qid'],
+        "transactionId": str(uuid.uuid4()),
+        "type": "RESPONSE_RECEIVED"
+    }
+
+    message = {
+        "type": "PUBSUB_EQ",
+        "topic": Config.OFFLINE_RECEIPT_TOPIC_NAME,
+        "project": Config.OFFLINE_RECEIPT_TOPIC_PROJECT_ID,
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents),
+        "tx_id": tx_id
+    }
+
+    messages_to_send.append(message)
+
+
+def prepare_response_received_qm(random_delay, random_case):
+    tx_id = str(uuid.uuid4())
+
+    message_contents = {
+        "channel": "QM",
+        "dateTime": f"{datetime.utcnow().isoformat()}Z",
+        "questionnaireId": random_case['qid'],
+        "transactionId": str(uuid.uuid4()),
+        "type": "RESPONSE_RECEIVED"
+    }
+
+    message = {
+        "type": "PUBSUB",
+        "topic": Config.OFFLINE_RECEIPT_TOPIC_NAME,
+        "project": Config.OFFLINE_RECEIPT_TOPIC_PROJECT_ID,
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents),
+        "tx_id": tx_id
+    }
+
+    messages_to_send.append(message)
+
+
+def prepare_response_received_qm_blanks(random_delay, random_case):
+    tx_id = str(uuid.uuid4())
+
+    message_contents = {
+        "channel": "QM",
+        "dateTime": f"{datetime.utcnow().isoformat()}Z",
+        "questionnaireId": random_case['qid'],
+        "transactionId": str(uuid.uuid4()),
+        "type": "RESPONSE_RECEIVED",
+        "unreceipt": True
+    }
+
+    message = {
+        "type": "PUBSUB",
+        "topic": Config.OFFLINE_RECEIPT_TOPIC_NAME,
+        "project": Config.OFFLINE_RECEIPT_TOPIC_PROJECT_ID,
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents),
+        "tx_id": tx_id
+    }
+
+    messages_to_send.append(message)
+
+
 def prepare_refusal_received(random_delay, random_case):
     message_contents = {
         "event": {
@@ -182,7 +261,7 @@ def prepare_refusal_received(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_fulfilment_requested(random_delay, random_case):
+def prepare_fulfilment_requested_sms(random_delay, random_case):
     message_contents = {
         "event": {
             "type": "FULFILMENT_REQUESTED",
@@ -213,6 +292,57 @@ def prepare_fulfilment_requested(random_delay, random_case):
     messages_to_send.append(message)
 
 
+def prepare_fulfilment_requested_print(random_delay, random_case):
+    message_contents = {
+        "event": {
+            "type": "FULFILMENT_REQUESTED",
+            "source": "CONTACT_CENTRE_API",
+            "channel": "CC",
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
+        },
+        "payload": {
+            "fulfilmentRequest": {
+                "fulfilmentCode": "P_OR_H1",
+                "caseId": random_case['case_id'],
+                "address": {},
+                "contact": {
+                }
+            }
+        }
+    }
+
+    message = {
+        "type": "RABBIT",
+        "topic": "event.fulfilment.request",
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
+def prepare_fulfilment_confirmed(random_delay, random_case):
+    message_contents = {
+        "dateTime": f"{datetime.utcnow().isoformat()}Z",
+        "caseRef": random_case['case_ref'],
+        "productCode": "P_OR_H1",
+        "channel": "PPO",
+        "type": "FULFILMENT_CONFIRMED",
+        "transactionId": str(uuid.uuid4())
+    }
+
+    message = {
+        "type": "PUBSUB",
+        "topic": Config.FULFILMENT_CONFIRMED_TOPIC_NAME,
+        "project": Config.FULFILMENT_CONFIRMED_PROJECT,
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
 def prepare_undelivered_mail_reported(random_delay, random_case):
     message_contents = {
         "transactionId": str(uuid.uuid4()),
@@ -232,6 +362,163 @@ def prepare_undelivered_mail_reported(random_delay, random_case):
     messages_to_send.append(message)
 
 
+def prepare_address_modified(random_delay, random_case):
+    message_contents = {
+        "event": {
+            "type": "ADDRESS_MODIFIED",
+            "source": "CONTACT_CENTRE_API",
+            "channel": "CC",
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
+        },
+        "payload": {
+            "addressModification": {
+                "collectionCase": {
+                    "id": random_case['case_id']
+                },
+                "originalAddress": {
+                    "addressLine1": "1 main street",
+                    "addressLine2": "upper upperingham",
+                    "addressLine3": "",
+                    "townName": "upton",
+                    "postcode": "UP103UP",
+                    "region": "E",
+                    "uprn": "123456789"
+                },
+                "newAddress": {
+                    "addressLine1": "1a main street",
+                    "addressLine2": "upper upperingham",
+                    "addressLine3": "",
+                    "townName": "upton",
+                    "postcode": "UP103UP",
+                    "region": "E",
+                    "uprn": "123456789"
+                }
+            }
+        }
+    }
+
+    message = {
+        "type": "RABBIT",
+        "topic": "event.case.address.update",
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
+def prepare_address_type_changed(random_delay, random_case):
+    message_contents = {
+        "event": {
+            "type": "ADDRESS_TYPE_CHANGED",
+            "source": "FIELDWORK_GATEWAY",
+            "channel": "FIELD",
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
+        },
+        "payload": {
+            "addressTypeChange": {
+                "newCaseId": str(uuid.uuid4()),
+                "collectionCase": {
+                    "id": random_case['case_id'],
+                    "ceExpectedCapacity": "20",
+                    "address": {
+                        "organisationName": "XXXXXXXXXXXXX",
+                        "addressType": "CE",
+                        "estabType": "XXX"
+                    }
+                }
+            }
+        }
+    }
+
+    message = {
+        "type": "RABBIT",
+        "topic": "event.case.address.update",
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
+def prepare_address_not_valid(random_delay, random_case):
+    message_contents = {
+        "event": {
+            "type": "ADDRESS_NOT_VALID",
+            "source": "FIELDWORK_GATEWAY",
+            "channel": "FIELD",
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
+        },
+        "payload": {
+            "invalidAddress": {
+                "reason": "MERGED",
+                "notes": "was 1a 1b and 1c",
+                "collectionCase": {
+                    "id": random_case['case_id']
+                }
+            }
+        }
+    }
+
+    message = {
+        "type": "RABBIT",
+        "topic": "event.case.address.update",
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
+def prepare_new_address_reported(random_delay, random_case):
+    message_contents = {
+        "event": {
+            "type": "NEW_ADDRESS_REPORTED",
+            "source": "FIELDWORK_GATEWAY",
+            "channel": "FIELD",
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
+        },
+        "payload": {
+            "newAddress": {
+                "sourceCaseId": random_case['case_id'],
+                "collectionCase": {
+                    "id": str(uuid.uuid4()),
+                    "caseType": "SPG",
+                    "survey": "CENSUS",
+                    "fieldCoordinatorId": "SO_23",
+                    "fieldOfficerId": "SO_23_123",
+                    "address": {
+                        "addressLine1": "100",
+                        "addressLine2": "Kanes caravan park",
+                        "addressLine3": "fairoak road",
+                        "townName": "southampton",
+                        "postcode": "SO190PG",
+                        "region": "E",
+                        "addressType": "SPG",
+                        "addressLevel": "U",
+                        "estabType": "Residential Caravaner",
+                        "latitude": "50.917428",
+                        "longitude": "-1.238193"
+                    }
+                }
+            }
+        }
+    }
+
+    message = {
+        "type": "RABBIT",
+        "topic": "event.case.address.update",
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
 def prepare_messages_to_be_sent():
     for _ in range(total_messages_to_send):
         random_message_type = message_type_randomiser[random.randint(0, len(message_type_randomiser) - 1)]
@@ -244,12 +531,30 @@ def prepare_messages_to_be_sent():
             prepare_survey_launched(random_delay, random_case)
         elif random_message_type == 'RESPONSE_RECEIVED':
             prepare_response_received(random_delay, random_case)
+        elif random_message_type == 'RESPONSE_RECEIVED':
+            prepare_response_received_pqrs(random_delay, random_case)
+        elif random_message_type == 'RESPONSE_RECEIVED':
+            prepare_response_received_qm(random_delay, random_case)
+        elif random_message_type == 'RESPONSE_RECEIVED':
+            prepare_response_received_qm_blanks(random_delay, random_case)
         elif random_message_type == 'REFUSAL_RECEIVED':
             prepare_refusal_received(random_delay, random_case)
         elif random_message_type == 'FULFILMENT_REQUESTED':
-            prepare_fulfilment_requested(random_delay, random_case)
+            prepare_fulfilment_requested_sms(random_delay, random_case)
+        elif random_message_type == 'FULFILMENT_REQUESTED':
+            prepare_fulfilment_requested_print(random_delay, random_case)
+        elif random_message_type == 'FULFILMENT_CONFIRMED':
+            prepare_fulfilment_confirmed(random_delay, random_case)
         elif random_message_type == 'UNDELIVERED_MAIL_REPORTED':
             prepare_undelivered_mail_reported(random_delay, random_case)
+        elif random_message_type == 'ADDRESS_MODIFIED':
+            prepare_address_modified(random_delay, random_case)
+        elif random_message_type == 'ADDRESS_TYPE_CHANGED':
+            prepare_address_type_changed(random_delay, random_case)
+        elif random_message_type == 'ADDRESS_NOT_VALID':
+            prepare_address_not_valid(random_delay, random_case)
+        elif random_message_type == 'NEW_ADDRESS_REPORTED':
+            prepare_new_address_reported(random_delay, random_case)
 
 
 def send_rabbit_message(rabbit, message):
