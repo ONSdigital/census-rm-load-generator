@@ -14,19 +14,20 @@ message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_weightings = {
     "RESPONDENT_AUTHENTICATED": 36,
     "SURVEY_LAUNCHED": 34,
-    "RESPONSE_RECEIVED": 18,
+    "RESPONSE_RECEIVED": 17,
+    "RESPONSE_RECEIVED.pqrs": 1,
+    "RESPONSE_RECEIVED.qm": 1,
+    "RESPONSE_RECEIVED.qm_blanks": 1,
     "REFUSAL_RECEIVED": 1,
-    "FULFILMENT_REQUESTED_SMS": 1,
-    "FULFILMENT_REQUESTED_PRINT": 1,
+    "FULFILMENT_REQUESTED.sms": 1,
+    "FULFILMENT_REQUESTED.print": 1,
     "UNDELIVERED_MAIL_REPORTED": 1,
     "FULFILMENT_CONFIRMED": 1,
     "NEW_ADDRESS_REPORTED": 1,
     "ADDRESS_NOT_VALID": 1,
     "ADDRESS_TYPE_CHANGED": 1,
     "ADDRESS_MODIFIED": 1,
-    "PRINT_CASE_SELECTED": 1,
-    "OFFLINE_RECEIPT_PPO": 1,
-    "OFFLINE_RECEIPT_QM": 1
+    "PRINT_CASE_SELECTED": 1
 }
 message_type_randomiser = []
 
@@ -146,33 +147,18 @@ def prepare_response_received(random_delay, random_case):
 
 
 def prepare_response_received_pqrs(random_delay, random_case):
-    tx_id = str(uuid.uuid4())
-
-    message_contents = {
-        "channel": "PQRS",
-        "dateTime": f"{datetime.utcnow().isoformat()}Z",
-        "questionnaireId": random_case['qid'],
-        "transactionId": str(uuid.uuid4()),
-        "type": "RESPONSE_RECEIVED"
-    }
-
-    message = {
-        "type": "PUBSUB_EQ",
-        "topic": Config.OFFLINE_RECEIPT_TOPIC_NAME,
-        "project": Config.OFFLINE_RECEIPT_TOPIC_PROJECT_ID,
-        "delay": random_delay,
-        "message_body": json.dumps(message_contents),
-        "tx_id": tx_id
-    }
-
-    messages_to_send.append(message)
+    prepare_response_received_pqrs_and_qm(random_delay, random_case, channel="PQRS")
 
 
 def prepare_response_received_qm(random_delay, random_case):
+    prepare_response_received_pqrs_and_qm(random_delay, random_case, channel="QM")
+
+
+def prepare_response_received_pqrs_and_qm(random_delay, random_case, channel):
     tx_id = str(uuid.uuid4())
 
     message_contents = {
-        "channel": "QM",
+        "channel": channel,
         "dateTime": f"{datetime.utcnow().isoformat()}Z",
         "questionnaireId": random_case['qid'],
         "transactionId": str(uuid.uuid4()),
@@ -531,17 +517,17 @@ def prepare_messages_to_be_sent():
             prepare_survey_launched(random_delay, random_case)
         elif random_message_type == 'RESPONSE_RECEIVED':
             prepare_response_received(random_delay, random_case)
-        elif random_message_type == 'RESPONSE_RECEIVED':
+        elif random_message_type == 'RESPONSE_RECEIVED.pqrs':
             prepare_response_received_pqrs(random_delay, random_case)
-        elif random_message_type == 'RESPONSE_RECEIVED':
+        elif random_message_type == 'RESPONSE_RECEIVED.qm':
             prepare_response_received_qm(random_delay, random_case)
-        elif random_message_type == 'RESPONSE_RECEIVED':
+        elif random_message_type == 'RESPONSE_RECEIVED.qm_blanks':
             prepare_response_received_qm_blanks(random_delay, random_case)
         elif random_message_type == 'REFUSAL_RECEIVED':
             prepare_refusal_received(random_delay, random_case)
-        elif random_message_type == 'FULFILMENT_REQUESTED':
+        elif random_message_type == 'FULFILMENT_REQUESTED.sms':
             prepare_fulfilment_requested_sms(random_delay, random_case)
-        elif random_message_type == 'FULFILMENT_REQUESTED':
+        elif random_message_type == 'FULFILMENT_REQUESTED.print':
             prepare_fulfilment_requested_print(random_delay, random_case)
         elif random_message_type == 'FULFILMENT_CONFIRMED':
             prepare_fulfilment_confirmed(random_delay, random_case)
