@@ -147,11 +147,11 @@ def prepare_response_received(random_delay, random_case):
 
 
 def prepare_response_received_pqrs(random_delay, random_case):
-    prepare_response_received_pqrs_and_qm(random_delay, random_case, channel="PQRS")
+    prepare_response_received_pqrs_and_qm(random_delay, random_case, "PQRS")
 
 
 def prepare_response_received_qm(random_delay, random_case):
-    prepare_response_received_pqrs_and_qm(random_delay, random_case, channel="QM")
+    prepare_response_received_pqrs_and_qm(random_delay, random_case, "QM")
 
 
 def prepare_response_received_pqrs_and_qm(random_delay, random_case, channel):
@@ -162,7 +162,8 @@ def prepare_response_received_pqrs_and_qm(random_delay, random_case, channel):
         "dateTime": f"{datetime.utcnow().isoformat()}Z",
         "questionnaireId": random_case['qid'],
         "transactionId": str(uuid.uuid4()),
-        "type": "RESPONSE_RECEIVED"
+        "type": "RESPONSE_RECEIVED",
+        "unreceipt": False
     }
 
     message = {
