@@ -14,7 +14,7 @@ message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_weightings = {
     "RESPONDENT_AUTHENTICATED": 36,
     "SURVEY_LAUNCHED": 34,
-    "RESPONSE_RECEIVED": 17,
+    "RESPONSE_RECEIVED": 16,
     "RESPONSE_RECEIVED.pqrs": 1,
     "RESPONSE_RECEIVED.qm": 1,
     "RESPONSE_RECEIVED.qm_blanks": 1,
@@ -27,11 +27,13 @@ message_weightings = {
     "ADDRESS_NOT_VALID": 1,
     "ADDRESS_TYPE_CHANGED": 1,
     "ADDRESS_MODIFIED": 1,
-    "PRINT_CASE_SELECTED": 1
+    "PRINT_CASE_SELECTED": 1,
+    "QUESTIONNAIRE_LINKED": 1
 }
 message_type_randomiser = []
 
 test_cases = []
+test_unlinked_qids = []
 
 total_messages_to_send = int(Config.TOTAL_MESSAGES_TO_SEND)
 messages_to_send = []
@@ -65,6 +67,24 @@ def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
         }
 
         test_cases.append(case)
+
+
+def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNADDRESSED_QIDS_TO_FETCH)):
+    sql_query = f'''
+        SELECT u.uac, u.qid
+        FROM casev2.uac_qid_link u
+        WHERE caze_case_id IS NULL;
+       LIMIT {num_of_unaddressed_qids_to_fetch};'''
+
+    db_result = execute_sql_query(sql_query)
+
+    for row in db_result:
+        uac_qid_link = {
+            "uac": row[0],
+            "qid": row[1]
+        }
+
+        test_unlinked_qids.append(uac_qid_link)
 
 
 def prepare_respondent_authenticated(random_delay, random_case):
@@ -506,11 +526,39 @@ def prepare_new_address_reported(random_delay, random_case):
     messages_to_send.append(message)
 
 
+def prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid):
+    message_contents = {
+        'event': {
+            'type': 'QUESTIONNAIRE_LINKED',
+            'source': 'FIELDWORK_GATEWAY',
+            'channel': 'FIELD',
+            "dateTime": "2011-08-12T20:17:46.384Z",
+            "transactionId": "c45de4dc-3c3b-11e9-b210-d663bd873d93"
+        },
+        'payload': {
+            'uac': {
+                "caseId": random_case['case_id'],
+                'questionnaireId': random_uac_qid['qid'],
+            }
+        }
+    }
+
+    message = {
+        "type": "RABBIT",
+        "topic": "event.questionnaire.update",
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
 def prepare_messages_to_be_sent():
     for _ in range(total_messages_to_send):
         random_message_type = message_type_randomiser[random.randint(0, len(message_type_randomiser) - 1)]
         random_delay = random.random() / message_rate  # In seconds
         random_case = test_cases[random.randint(0, len(test_cases) - 1)]
+        random_uac_qid = test_unlinked_qids[random.randint(0, len(test_unlinked_qids) - 1)]
 
         if random_message_type == 'RESPONDENT_AUTHENTICATED':
             prepare_respondent_authenticated(random_delay, random_case)
@@ -542,6 +590,9 @@ def prepare_messages_to_be_sent():
             prepare_address_not_valid(random_delay, random_case)
         elif random_message_type == 'NEW_ADDRESS_REPORTED':
             prepare_new_address_reported(random_delay, random_case)
+        elif random_message_type == 'QUESTIONNAIRE_LINKED':
+            prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid)
+
 
 
 def send_rabbit_message(rabbit, message):

@@ -24,6 +24,7 @@ class Config:
     FULFILMENT_CONFIRMED_TOPIC_NAME = "fulfilment-topic"
     FULFILMENT_CONFIRMED_PROJECT = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'fulfilment-confirmed-project')
     CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "50")
+    UNADDRESSED_QIDS_TO_FETCH = os.getenv("UNADDRESSED_QIDS_TO_FETCH", "20")
     MESSAGE_RATE = os.getenv("MESSAGE_RATE", "1000")  # Messages per second
     TOTAL_MESSAGES_TO_SEND = os.getenv("TOTAL_MESSAGES_TO_SEND", "10000")
     API_CALL_RATE = os.getenv("API_CALL_RATE", "1000")  # Calls per second
