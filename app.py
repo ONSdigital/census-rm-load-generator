@@ -73,7 +73,7 @@ def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNAD
     sql_query = f'''
         SELECT u.uac, u.qid
         FROM casev2.uac_qid_link u
-        WHERE caze_case_id IS NULL;
+        WHERE caze_case_id IS NULL
        LIMIT {num_of_unaddressed_qids_to_fetch};'''
 
     db_result = execute_sql_query(sql_query)
@@ -635,6 +635,7 @@ def main():
 
     # Load a bunch of cases from the DB
     get_cases_from_db()
+    get_unadressed_qids_from_db()
 
     # Prepare message to be sent, based on weightings etc
     prepare_messages_to_be_sent()
