@@ -532,8 +532,8 @@ def prepare_questionnaire_linked_message(random_delay, random_case, random_uac_q
             'type': 'QUESTIONNAIRE_LINKED',
             'source': 'FIELDWORK_GATEWAY',
             'channel': 'FIELD',
-            "dateTime": "2011-08-12T20:17:46.384Z",
-            "transactionId": "c45de4dc-3c3b-11e9-b210-d663bd873d93"
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
         },
         'payload': {
             'uac': {
