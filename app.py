@@ -74,7 +74,7 @@ def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNAD
         SELECT u.uac, u.qid
         FROM casev2.uac_qid_link u
         WHERE caze_case_id IS NULL
-       LIMIT {num_of_unaddressed_qids_to_fetch};'''
+        LIMIT {num_of_unaddressed_qids_to_fetch};'''
 
     db_result = execute_sql_query(sql_query)
 
