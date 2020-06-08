@@ -594,7 +594,6 @@ def prepare_messages_to_be_sent():
             prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid)
 
 
-
 def send_rabbit_message(rabbit, message):
     rabbit.publish_message(message['message_body'], 'application/json', None, routing_key=message['topic'])
 
