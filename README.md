@@ -9,6 +9,7 @@ a random time / Config.MESSAGE_RATE.
 
 The messages it sends are set in the list 'message_weightings', this has the types and weighting which should add up to 100.
 
+In order to run this you will need a good sized sample and unaddressed qids in the database.
 
 ## How to run (locally)
 Run: `PUBSUB_EMULATOR_HOST=localhost:8538 pipenv run python app.py`
