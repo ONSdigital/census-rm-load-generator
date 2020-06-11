@@ -12,8 +12,8 @@ from utilities.rabbit_context import RabbitContext
 
 message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_weightings = {
-    "RESPONDENT_AUTHENTICATED": 36,
-    "SURVEY_LAUNCHED": 34,
+    "RESPONDENT_AUTHENTICATED": 35,
+    "SURVEY_LAUNCHED": 33,
     "RESPONSE_RECEIVED": 16,
     "RESPONSE_RECEIVED.pqrs": 1,
     "RESPONSE_RECEIVED.qm": 1,
@@ -21,6 +21,8 @@ message_weightings = {
     "REFUSAL_RECEIVED": 1,
     "FULFILMENT_REQUESTED.sms": 1,
     "FULFILMENT_REQUESTED.print": 1,
+    "FULFILMENT_REQUESTED.EQ.sms": 1,
+    "FULFILMENT_REQUESTED.EQ.print": 1,
     "UNDELIVERED_MAIL_REPORTED": 1,
     "FULFILMENT_CONFIRMED": 1,
     "NEW_ADDRESS_REPORTED": 1,
@@ -313,8 +315,7 @@ def prepare_fulfilment_requested_print(random_delay, random_case):
                 "fulfilmentCode": "P_OR_H1",
                 "caseId": random_case['case_id'],
                 "address": {},
-                "contact": {
-                }
+                "contact": {}
             }
         }
     }
@@ -553,6 +554,68 @@ def prepare_questionnaire_linked_message(random_delay, random_case, random_uac_q
     messages_to_send.append(message)
 
 
+def prepare_eq_sms_fulfilment_request(random_delay, random_case):
+    message_contents = {
+        "event": {
+            "type": "FULFILMENT_REQUESTED",
+            "source": "QUESTIONNAIRE_RUNNER",
+            "channel": "EQ",
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
+        },
+        "payload": {
+            "fulfilmentRequest": {
+                "fulfilmentCode": "UACIT1",
+                "caseId": random_case['case_id'],
+                "individualCaseId": str(uuid.uuid4()),
+                "contact": {
+                    "telNo": "+447876224123"
+                }
+            }
+        }
+    }
+
+    message = {
+        "type": "PUBSUB",
+        "topic": Config.EQ_FULFILMENT_TOPIC_NAME,
+        "project": Config.EQ_FULFILMENT_PROJECT_NAME,
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
+def prepare_eq_print_fulfilment_request(random_delay, random_case):
+    message_contents = {
+        "event": {
+            "type": "FULFILMENT_REQUESTED",
+            "source": "QUESTIONNAIRE_RUNNER",
+            "channel": "EQ",
+            "dateTime": f"{datetime.utcnow().isoformat()}Z",
+            "transactionId": str(uuid.uuid4())
+        },
+        "payload": {
+            "fulfilmentRequest": {
+                "fulfilmentCode": "P_UAC_UACIP1",
+                "caseId": random_case['case_id'],
+                "individualCaseId": str(uuid.uuid4()),
+                "contact": {}
+            }
+        }
+    }
+
+    message = {
+        "type": "PUBSUB",
+        "topic": Config.EQ_FULFILMENT_TOPIC_NAME,
+        "project": Config.EQ_FULFILMENT_PROJECT_NAME,
+        "delay": random_delay,
+        "message_body": json.dumps(message_contents)
+    }
+
+    messages_to_send.append(message)
+
+
 def prepare_messages_to_be_sent():
     for _ in range(total_messages_to_send):
         random_message_type = message_type_randomiser[random.randint(0, len(message_type_randomiser) - 1)]
@@ -592,6 +655,10 @@ def prepare_messages_to_be_sent():
             prepare_new_address_reported(random_delay, random_case)
         elif random_message_type == 'QUESTIONNAIRE_LINKED':
             prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid)
+        elif random_message_type == 'FULFILMENT_REQUEST.EQ.sms':
+            prepare_eq_sms_fulfilment_request(random_delay, random_case)
+        elif random_message_type == 'FULFILMENT_REQUEST.EQ.print':
+            prepare_eq_print_fulfilment_request(random_delay, random_case)
 
 
 def send_rabbit_message(rabbit, message):
