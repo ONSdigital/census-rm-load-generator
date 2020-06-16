@@ -21,8 +21,10 @@ class Config:
     QM_UNDELIVERED_TOPIC_NAME = "qm-undelivered-topic"
     QM_UNDELIVERED_PROJECT_ID = os.getenv("QM_UNDELIVERED_PROJECT_ID",
                                           "qm-undelivered-project")
-    FULFILMENT_CONFIRMED_TOPIC_NAME = "fulfilment-topic"
+    FULFILMENT_CONFIRMED_TOPIC_NAME = "fulfilment-confirmed-topic"
     FULFILMENT_CONFIRMED_PROJECT = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'fulfilment-confirmed-project')
+    EQ_FULFILMENT_TOPIC_NAME = "eq-fulfilment-topic"
+    EQ_FULFILMENT_PROJECT_NAME = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'eq-fulfilment-project')
     CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "50")
     UNADDRESSED_QIDS_TO_FETCH = os.getenv("UNADDRESSED_QIDS_TO_FETCH", "20")
     MESSAGE_RATE = os.getenv("MESSAGE_RATE", "1000")  # Messages per second
