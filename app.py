@@ -11,26 +11,26 @@ from utilities.db_helper import execute_sql_query
 from utilities.rabbit_context import RabbitContext
 
 message_rate = int(Config.MESSAGE_RATE)  # Per second
-message_weightings = {
-    "RESPONDENT_AUTHENTICATED": 35,
-    "SURVEY_LAUNCHED": 33,
-    "RESPONSE_RECEIVED": 16,
-    "RESPONSE_RECEIVED.pqrs": 1,
-    "RESPONSE_RECEIVED.qm": 1,
-    "RESPONSE_RECEIVED.qm_blanks": 1,
-    "REFUSAL_RECEIVED": 1,
-    "FULFILMENT_REQUESTED.sms": 1,
-    "FULFILMENT_REQUESTED.print": 1,
-    "FULFILMENT_REQUESTED.EQ.sms": 1,
-    "FULFILMENT_REQUESTED.EQ.print": 1,
-    "UNDELIVERED_MAIL_REPORTED": 1,
-    "FULFILMENT_CONFIRMED": 1,
-    "NEW_ADDRESS_REPORTED": 1,
-    "ADDRESS_NOT_VALID": 1,
-    "ADDRESS_TYPE_CHANGED": 1,
-    "ADDRESS_MODIFIED": 1,
-    "PRINT_CASE_SELECTED": 1,
-    "QUESTIONNAIRE_LINKED": 1
+message_settings = {
+    "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": 0.001},
+    "SURVEY_LAUNCHED": {"weight": 33, "chaos": 0.001},
+    "RESPONSE_RECEIVED": {"weight": 16, "chaos": 0.001},
+    "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": 0.001},
+    "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": 0.001},
+    "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": 0.001},
+    "REFUSAL_RECEIVED": {"weight": 1, "chaos": 0.001},
+    "FULFILMENT_REQUESTED.sms": {"weight": 1, "chaos": 0.001},
+    "FULFILMENT_REQUESTED.print": {"weight": 1, "chaos": 0.001},
+    "FULFILMENT_REQUESTED.EQ.sms": {"weight": 1, "chaos": 0.001},
+    "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": 0.001},
+    "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": 0.001},
+    "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": 0.001},
+    "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": 0.001},
+    "ADDRESS_NOT_VALID": {"weight": 1, "chaos": 0.001},
+    "ADDRESS_TYPE_CHANGED": {"weight": 1, "chaos": 0.001},
+    "ADDRESS_MODIFIED": {"weight": 1, "chaos": 0.001},
+    "PRINT_CASE_SELECTED": {"weight": 1, "chaos": 0.001},
+    "QUESTIONNAIRE_LINKED": {"weight": 1, "chaos": 0.001}
 }
 message_type_randomiser = []
 
@@ -42,8 +42,8 @@ messages_to_send = []
 
 
 def prepare_randomiser():
-    for key, value in message_weightings.items():
-        for _ in range(value):
+    for key, value in message_settings.items():
+        for _ in range(value['weight']):
             message_type_randomiser.append(key)
 
 
@@ -89,7 +89,35 @@ def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNAD
         test_unlinked_qids.append(uac_qid_link)
 
 
-def prepare_respondent_authenticated(random_delay, random_case):
+def get_chaotic_qid(qid, random_chaos, one_in_n):
+    if random_chaos and random.randint(1, one_in_n) == 1:
+        return str(random.randint(100000000000, 999999999999))
+    else:
+        return qid
+
+
+def get_chaotic_case_id(case_id, random_chaos, one_in_n):
+    if random_chaos and random.randint(1, one_in_n) == 1:
+        return str(uuid.uuid4())
+    else:
+        return case_id
+
+
+def get_chaotic_phone_number(phone_number, random_chaos, one_in_n):
+    if random_chaos and random.randint(1, one_in_n) == 1:
+        return str(random.randint(100000, 999999))
+    else:
+        return phone_number
+
+
+def get_chaotic_case_ref(case_ref, random_chaos, one_in_n):
+    if random_chaos and random.randint(1, one_in_n) == 1:
+        return str(random.randint(100000000000, 999999999999))
+    else:
+        return case_ref
+
+
+def prepare_respondent_authenticated(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "RESPONDENT_AUTHENTICATED",
@@ -100,8 +128,8 @@ def prepare_respondent_authenticated(random_delay, random_case):
         },
         "payload": {
             "response": {
-                "questionnaireId": random_case['qid'],
-                "caseId": random_case['case_id']
+                "questionnaireId": get_chaotic_qid(random_case['qid'], random_chaos, 2),
+                "caseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 2)
             }
         }
     }
@@ -116,7 +144,7 @@ def prepare_respondent_authenticated(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_survey_launched(random_delay, random_case):
+def prepare_survey_launched(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "SURVEY_LAUNCHED",
@@ -127,8 +155,8 @@ def prepare_survey_launched(random_delay, random_case):
         },
         "payload": {
             "response": {
-                "questionnaireId": random_case['qid'],
-                "caseId": random_case['case_id'],
+                "questionnaireId": get_chaotic_qid(random_case['qid'], random_chaos, 2),
+                "caseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 2),
                 "agentId": "cc_000351"
             }
         }
@@ -144,15 +172,15 @@ def prepare_survey_launched(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_response_received(random_delay, random_case):
+def prepare_response_received(random_delay, random_case, random_chaos):
     tx_id = str(uuid.uuid4())
 
     message_contents = {
         "timeCreated": f"{datetime.utcnow().isoformat()}Z",
         "metadata": {
-            "case_id": random_case['case_id'],
+            "case_id": get_chaotic_case_id(random_case['case_id'], random_chaos, 2),
             "tx_id": tx_id,
-            "questionnaire_id": random_case['qid'],
+            "questionnaire_id": get_chaotic_qid(random_case['qid'], random_chaos, 2),
         }
     }
 
@@ -168,21 +196,21 @@ def prepare_response_received(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_response_received_pqrs(random_delay, random_case):
-    prepare_response_received_pqrs_and_qm(random_delay, random_case, "PQRS")
+def prepare_response_received_pqrs(random_delay, random_case, random_chaos):
+    prepare_response_received_pqrs_and_qm(random_delay, random_case, "PQRS", random_chaos)
 
 
-def prepare_response_received_qm(random_delay, random_case):
-    prepare_response_received_pqrs_and_qm(random_delay, random_case, "QM")
+def prepare_response_received_qm(random_delay, random_case, random_chaos):
+    prepare_response_received_pqrs_and_qm(random_delay, random_case, "QM", random_chaos)
 
 
-def prepare_response_received_pqrs_and_qm(random_delay, random_case, channel):
+def prepare_response_received_pqrs_and_qm(random_delay, random_case, channel, random_chaos):
     tx_id = str(uuid.uuid4())
 
     message_contents = {
         "channel": channel,
         "dateTime": f"{datetime.utcnow().isoformat()}Z",
-        "questionnaireId": random_case['qid'],
+        "questionnaireId": get_chaotic_qid(random_case['qid'], random_chaos, 1),
         "transactionId": str(uuid.uuid4()),
         "type": "RESPONSE_RECEIVED",
         "unreceipt": False
@@ -200,13 +228,13 @@ def prepare_response_received_pqrs_and_qm(random_delay, random_case, channel):
     messages_to_send.append(message)
 
 
-def prepare_response_received_qm_blanks(random_delay, random_case):
+def prepare_response_received_qm_blanks(random_delay, random_case, random_chaos):
     tx_id = str(uuid.uuid4())
 
     message_contents = {
         "channel": "QM",
         "dateTime": f"{datetime.utcnow().isoformat()}Z",
-        "questionnaireId": random_case['qid'],
+        "questionnaireId": get_chaotic_qid(random_case['qid'], random_chaos, 1),
         "transactionId": str(uuid.uuid4()),
         "type": "RESPONSE_RECEIVED",
         "unreceipt": True
@@ -224,7 +252,7 @@ def prepare_response_received_qm_blanks(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_refusal_received(random_delay, random_case):
+def prepare_refusal_received(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "REFUSAL_RECEIVED",
@@ -239,7 +267,7 @@ def prepare_refusal_received(random_delay, random_case):
                 "report": "respondent unwilling",
                 "agentId": "110001",
                 "collectionCase": {
-                    "id": random_case['case_id']
+                    "id": get_chaotic_case_id(random_case['case_id'], random_chaos, 1)
                 },
                 "contact": {
                     "title": "Ms",
@@ -270,7 +298,7 @@ def prepare_refusal_received(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_fulfilment_requested_sms(random_delay, random_case):
+def prepare_fulfilment_requested_sms(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "FULFILMENT_REQUESTED",
@@ -282,10 +310,10 @@ def prepare_fulfilment_requested_sms(random_delay, random_case):
         "payload": {
             "fulfilmentRequest": {
                 "fulfilmentCode": "UACHHT1",
-                "caseId": random_case['case_id'],
+                "caseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 2),
                 "address": {},
                 "contact": {
-                    "telNo": "+447876224123"
+                    "telNo": get_chaotic_phone_number("+447876224123", random_chaos, 2)
                 }
             }
         }
@@ -301,7 +329,7 @@ def prepare_fulfilment_requested_sms(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_fulfilment_requested_print(random_delay, random_case):
+def prepare_fulfilment_requested_print(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "FULFILMENT_REQUESTED",
@@ -313,7 +341,7 @@ def prepare_fulfilment_requested_print(random_delay, random_case):
         "payload": {
             "fulfilmentRequest": {
                 "fulfilmentCode": "P_OR_H1",
-                "caseId": random_case['case_id'],
+                "caseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 1),
                 "address": {},
                 "contact": {}
             }
@@ -330,10 +358,10 @@ def prepare_fulfilment_requested_print(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_fulfilment_confirmed(random_delay, random_case):
+def prepare_fulfilment_confirmed(random_delay, random_case, random_chaos):
     message_contents = {
         "dateTime": f"{datetime.utcnow().isoformat()}Z",
-        "caseRef": str(random_case['case_ref']),
+        "caseRef": get_chaotic_case_ref(str(random_case['case_ref']), random_chaos, 1),
         "productCode": "P_OR_H1",
         "channel": "PPO",
         "type": "FULFILMENT_CONFIRMED",
@@ -351,11 +379,11 @@ def prepare_fulfilment_confirmed(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_undelivered_mail_reported(random_delay, random_case):
+def prepare_undelivered_mail_reported(random_delay, random_case, random_chaos):
     message_contents = {
         "transactionId": str(uuid.uuid4()),
         "dateTime": f"{datetime.now().replace(microsecond=0).isoformat()}",
-        "questionnaireId": random_case['qid'],
+        "questionnaireId": get_chaotic_qid(random_case['qid'], random_chaos, 1),
         "unreceipt": False
     }
 
@@ -370,7 +398,7 @@ def prepare_undelivered_mail_reported(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_address_modified(random_delay, random_case):
+def prepare_address_modified(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "ADDRESS_MODIFIED",
@@ -382,7 +410,7 @@ def prepare_address_modified(random_delay, random_case):
         "payload": {
             "addressModification": {
                 "collectionCase": {
-                    "id": random_case['case_id']
+                    "id": get_chaotic_case_id(random_case['case_id'], random_chaos, 1)
                 },
                 "originalAddress": {
                     "addressLine1": "1 main street",
@@ -416,7 +444,7 @@ def prepare_address_modified(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_address_type_changed(random_delay, random_case):
+def prepare_address_type_changed(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "ADDRESS_TYPE_CHANGED",
@@ -429,7 +457,7 @@ def prepare_address_type_changed(random_delay, random_case):
             "addressTypeChange": {
                 "newCaseId": str(uuid.uuid4()),
                 "collectionCase": {
-                    "id": random_case['case_id'],
+                    "id": get_chaotic_case_id(random_case['case_id'], random_chaos, 1),
                     "ceExpectedCapacity": "20",
                     "address": {
                         "organisationName": "XXXXXXXXXXXXX",
@@ -451,7 +479,7 @@ def prepare_address_type_changed(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_address_not_valid(random_delay, random_case):
+def prepare_address_not_valid(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "ADDRESS_NOT_VALID",
@@ -465,7 +493,7 @@ def prepare_address_not_valid(random_delay, random_case):
                 "reason": "MERGED",
                 "notes": "was 1a 1b and 1c",
                 "collectionCase": {
-                    "id": random_case['case_id']
+                    "id": get_chaotic_case_id(random_case['case_id'], random_chaos, 1)
                 }
             }
         }
@@ -481,7 +509,7 @@ def prepare_address_not_valid(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_new_address_reported(random_delay, random_case):
+def prepare_new_address_reported(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "NEW_ADDRESS_REPORTED",
@@ -492,7 +520,7 @@ def prepare_new_address_reported(random_delay, random_case):
         },
         "payload": {
             "newAddress": {
-                "sourceCaseId": random_case['case_id'],
+                "sourceCaseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 1),
                 "collectionCase": {
                     "id": str(uuid.uuid4()),
                     "caseType": "SPG",
@@ -527,7 +555,7 @@ def prepare_new_address_reported(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid):
+def prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid, random_chaos):
     message_contents = {
         'event': {
             'type': 'QUESTIONNAIRE_LINKED',
@@ -538,8 +566,8 @@ def prepare_questionnaire_linked_message(random_delay, random_case, random_uac_q
         },
         'payload': {
             'uac': {
-                "caseId": random_case['case_id'],
-                'questionnaireId': random_uac_qid['qid'],
+                "caseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 2),
+                'questionnaireId': get_chaotic_qid(random_uac_qid['qid'], random_chaos, 2),
             }
         }
     }
@@ -554,7 +582,7 @@ def prepare_questionnaire_linked_message(random_delay, random_case, random_uac_q
     messages_to_send.append(message)
 
 
-def prepare_eq_sms_fulfilment_request(random_delay, random_case):
+def prepare_eq_sms_fulfilment_request(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "FULFILMENT_REQUESTED",
@@ -566,10 +594,10 @@ def prepare_eq_sms_fulfilment_request(random_delay, random_case):
         "payload": {
             "fulfilmentRequest": {
                 "fulfilmentCode": "UACIT1",
-                "caseId": random_case['case_id'],
+                "caseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 2),
                 "individualCaseId": str(uuid.uuid4()),
                 "contact": {
-                    "telNo": "+447876224123"
+                    "telNo": get_chaotic_phone_number("+447876224123", random_chaos, 2)
                 }
             }
         }
@@ -586,7 +614,7 @@ def prepare_eq_sms_fulfilment_request(random_delay, random_case):
     messages_to_send.append(message)
 
 
-def prepare_eq_print_fulfilment_request(random_delay, random_case):
+def prepare_eq_print_fulfilment_request(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
             "type": "FULFILMENT_REQUESTED",
@@ -598,7 +626,7 @@ def prepare_eq_print_fulfilment_request(random_delay, random_case):
         "payload": {
             "fulfilmentRequest": {
                 "fulfilmentCode": "P_UAC_UACIP1",
-                "caseId": random_case['case_id'],
+                "caseId": get_chaotic_case_id(random_case['case_id'], random_chaos, 1),
                 "individualCaseId": str(uuid.uuid4()),
                 "contact": {}
             }
@@ -622,43 +650,44 @@ def prepare_messages_to_be_sent():
         random_delay = random.random() / message_rate  # In seconds
         random_case = test_cases[random.randint(0, len(test_cases) - 1)]
         random_uac_qid = test_unlinked_qids[random.randint(0, len(test_unlinked_qids) - 1)]
+        random_chaos = random.random() < message_settings[random_message_type]['chaos']
 
         if random_message_type == 'RESPONDENT_AUTHENTICATED':
-            prepare_respondent_authenticated(random_delay, random_case)
+            prepare_respondent_authenticated(random_delay, random_case, random_chaos)
         elif random_message_type == 'SURVEY_LAUNCHED':
-            prepare_survey_launched(random_delay, random_case)
+            prepare_survey_launched(random_delay, random_case, random_chaos)
         elif random_message_type == 'RESPONSE_RECEIVED':
-            prepare_response_received(random_delay, random_case)
+            prepare_response_received(random_delay, random_case, random_chaos)
         elif random_message_type == 'RESPONSE_RECEIVED.pqrs':
-            prepare_response_received_pqrs(random_delay, random_case)
+            prepare_response_received_pqrs(random_delay, random_case, random_chaos)
         elif random_message_type == 'RESPONSE_RECEIVED.qm':
-            prepare_response_received_qm(random_delay, random_case)
+            prepare_response_received_qm(random_delay, random_case, random_chaos)
         elif random_message_type == 'RESPONSE_RECEIVED.qm_blanks':
-            prepare_response_received_qm_blanks(random_delay, random_case)
+            prepare_response_received_qm_blanks(random_delay, random_case, random_chaos)
         elif random_message_type == 'REFUSAL_RECEIVED':
-            prepare_refusal_received(random_delay, random_case)
+            prepare_refusal_received(random_delay, random_case, random_chaos)
         elif random_message_type == 'FULFILMENT_REQUESTED.sms':
-            prepare_fulfilment_requested_sms(random_delay, random_case)
+            prepare_fulfilment_requested_sms(random_delay, random_case, random_chaos)
         elif random_message_type == 'FULFILMENT_REQUESTED.print':
-            prepare_fulfilment_requested_print(random_delay, random_case)
+            prepare_fulfilment_requested_print(random_delay, random_case, random_chaos)
         elif random_message_type == 'FULFILMENT_CONFIRMED':
-            prepare_fulfilment_confirmed(random_delay, random_case)
+            prepare_fulfilment_confirmed(random_delay, random_case, random_chaos)
         elif random_message_type == 'UNDELIVERED_MAIL_REPORTED':
-            prepare_undelivered_mail_reported(random_delay, random_case)
+            prepare_undelivered_mail_reported(random_delay, random_case, random_chaos)
         elif random_message_type == 'ADDRESS_MODIFIED':
-            prepare_address_modified(random_delay, random_case)
+            prepare_address_modified(random_delay, random_case, random_chaos)
         elif random_message_type == 'ADDRESS_TYPE_CHANGED':
-            prepare_address_type_changed(random_delay, random_case)
+            prepare_address_type_changed(random_delay, random_case, random_chaos)
         elif random_message_type == 'ADDRESS_NOT_VALID':
-            prepare_address_not_valid(random_delay, random_case)
+            prepare_address_not_valid(random_delay, random_case, random_chaos)
         elif random_message_type == 'NEW_ADDRESS_REPORTED':
-            prepare_new_address_reported(random_delay, random_case)
+            prepare_new_address_reported(random_delay, random_case, random_chaos)
         elif random_message_type == 'QUESTIONNAIRE_LINKED':
-            prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid)
+            prepare_questionnaire_linked_message(random_delay, random_case, random_uac_qid, random_chaos)
         elif random_message_type == 'FULFILMENT_REQUEST.EQ.sms':
-            prepare_eq_sms_fulfilment_request(random_delay, random_case)
+            prepare_eq_sms_fulfilment_request(random_delay, random_case, random_chaos)
         elif random_message_type == 'FULFILMENT_REQUEST.EQ.print':
-            prepare_eq_print_fulfilment_request(random_delay, random_case)
+            prepare_eq_print_fulfilment_request(random_delay, random_case, random_chaos)
 
 
 def send_rabbit_message(rabbit, message):
