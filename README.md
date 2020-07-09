@@ -11,6 +11,11 @@ The messages it sends are set in the list 'message_weightings', this has the typ
 
 In order to run this you will need a good sized sample and unaddressed qids in the database.
 
+## Chaos Monkey
+Each message type can be configured to have a random amount of chaos, as controlled by a P-value.
+
+In order to turn off the chaos, set the chaos value to zero for all the message types in the `message_settings` block, in `app.py`.
+
 ## How to run (locally)
 Run: `PUBSUB_EMULATOR_HOST=localhost:8538 pipenv run python app.py`
 
