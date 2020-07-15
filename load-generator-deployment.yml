@@ -23,6 +23,7 @@ spec:
         env: dev
         version: "0.1.0dev"
     spec:
+      serviceAccountName: pubsub-loadgen
       securityContext:
         fsGroup: 1000
       containers:
@@ -49,8 +50,6 @@ spec:
               cpu: "0.5"
               memory: "2Gi"
           volumeMounts:
-            - name: gcp-credentials-volume
-              mountPath: /gcp-credentials
             - name: cloud-sql-certs
               mountPath: "/home/loadgenerator/postgresql"
               readOnly: true
@@ -70,22 +69,14 @@ spec:
                 configMapKeyRef:
                   name: project-config
                   key: project-name
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/gcp-credentials/service-account-key.json"
             - name: RABBIT_HOST
-              value: "rabbitmq"
+              value: "10.10.0.3"
             - name: RABBIT_PORT
               value: "5672"
             - name: RABBIT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: rabbitmq
-                  key: rabbitmq-username
+              value: "guest"
             - name: RABBIT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: rabbitmq
-                  key: rabbitmq-password
+              value: "1bDeg6tFKgppZvntC2B5k16S"
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -112,9 +103,6 @@ spec:
                   key: db-name
                   name: db-config
       volumes:
-        - name: gcp-credentials-volume
-          secret:
-            secretName: pubsub-credentials
         - name: cloud-sql-certs
           secret:
             defaultMode: 256
