@@ -16,6 +16,8 @@ GCP_REGION=europe-west2
 
 rm -rf .terraform
 
+tfenv install
+
 cat > terraform.tfvars << EOS
 environment_name = "$ENV"
 region = "$GCP_REGION"
@@ -31,12 +33,7 @@ fi
 if [ "$WFH_IP" ]; then
     cat >> terraform.tfvars << EOS
 wfh_allowed_cidrs = ["$WFH_IP"]
-k8s_master_whitelist_cidrs = [
-	{
-		display_name = "Home"
-		cidr_block   = "$WFH_IP"
-	},
-]
+k8s_master_whitelist_cidrs = []
 EOS
 fi
 

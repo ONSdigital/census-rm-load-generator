@@ -9,10 +9,12 @@ resource "google_container_cluster" "response-management" {
   initial_node_count       = var.initial_node_count
   remove_default_node_pool = true
   enable_shielded_nodes    = true
+  project                  = var.gcp_project
 
   private_cluster_config {
     enable_private_nodes   = true
     master_ipv4_cidr_block = var.k8s_master_cidr
+    enable_private_endpoint = false
   }
 
   ip_allocation_policy {
@@ -63,6 +65,7 @@ resource "google_container_node_pool" "default-node-pool" {
   cluster           = google_container_cluster.response-management.name
   max_pods_per_node = var.max_pods_per_node
   node_count        = var.initial_node_count
+  project           = var.gcp_project
 
   autoscaling {
     min_node_count = var.min_node_count

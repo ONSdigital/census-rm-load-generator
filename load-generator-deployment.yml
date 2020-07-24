@@ -54,6 +54,13 @@ spec:
               mountPath: "/home/loadgenerator/postgresql"
               readOnly: true
           env:
+            - name: OFFLINE_RECEIPT_TOPIC_NAME
+              value: "offline-receipt-topic"
+            - name: OFFLINE_RECEIPT_TOPIC_PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: offline-receipt-topic-project
             - name: RECEIPT_TOPIC_ID
               valueFrom:
                 configMapKeyRef:
@@ -63,20 +70,57 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: pubsub-config
-                  key: subscription-project-id
+                  key: receipt-topic-project-id
+            - name: FULFILMENT_CONFIRMED_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: fulfilment-confirmed-topic-name
+            - name: FULFILMENT_CONFIRMED_PROJECT
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: fulfilment-confirmed-project
             - name: QM_UNDELIVERED_PROJECT_ID
               valueFrom:
                 configMapKeyRef:
-                  name: project-config
-                  key: project-name
+                  name: pubsub-config
+                  key: qm-undelivered-project-id
+            - name: EQ_FULFILMENT_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: eq-fulfilment-topic-name
+            - name: EQ_FULFILMENT_PROJECT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: eq-fulfilment-project-id
+            - name: QM_UNDELIVERED_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: qm-undelivered-topic-name
             - name: RABBIT_HOST
-              value: "10.10.0.3"
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-host
+                  name: rabbitmq-host
             - name: RABBIT_PORT
-              value: "5672"
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-port
+                  name: rabbitmq-host
             - name: RABBIT_USERNAME
-              value: "guest"
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_USERNAME
+                  name: rabbitmq-cred
             - name: RABBIT_PASSWORD
-              value: "1bDeg6tFKgppZvntC2B5k16S"
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_PASSWORD
+                  name: rabbitmq-cred
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
