@@ -33,7 +33,12 @@ fi
 if [ "$WFH_IP" ]; then
     cat >> terraform.tfvars << EOS
 wfh_allowed_cidrs = ["$WFH_IP"]
-k8s_master_whitelist_cidrs = []
+k8s_master_whitelist_cidrs = [
+	{
+		display_name = "Home"
+		cidr_block   = "$WFH_IP"
+	},
+]
 EOS
 fi
 
