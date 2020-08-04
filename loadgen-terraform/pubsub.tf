@@ -1,9 +1,10 @@
 locals {
-  receipting_topic_name           = "receipting-topic-${var.environment_name}"
-  receipting_subscription_name    = "receipting-subscription-${var.environment_name}"
-  eq_fulfilment_topic_name        = "eq-fulfilment-topic-${var.environment_name}"
-  eq_fulfilment_subscription_name = "eq-fulfilment-subscription-${var.environment_name}"
-
+  receipting_topic_name           = "receipting-topic-${var.peer_environment}"
+  receipting_subscription_name    = "receipting-subscription-${var.peer_environment}"
+  eq_fulfilment_topic_name        = "eq-fulfilment-topic-${var.peer_environment}"
+  eq_fulfilment_subscription_name = "eq-fulfilment-subscription-${var.peer_environment}"
+  fulfilment_confirmed_topic_name = "fulfilment-confirmed-topic"
+  qm_undelivered_topic_name       = "qm-undelivered-topic"
 }
 
 resource "kubernetes_config_map" "pubsub-config" {
@@ -14,12 +15,17 @@ resource "kubernetes_config_map" "pubsub-config" {
 
   data = {
     receipt-topic-name              = local.receipting_topic_name
-    receipt-topic-project-id        = var.gcp_project
+    receipt-topic-project-id        = var.load-gen_peer_project
     subscription-name               = local.receipting_subscription_name
-    subscription-project-id         = var.gcp_project
+    subscription-project-id         = var.load-gen_peer_project
     eq-fulfilment-topic-name        = local.eq_fulfilment_topic_name
     eq-fulfilment-subscription-name = local.eq_fulfilment_subscription_name
-    eq-fulfilment-project-id        = var.gcp_project
+    eq-fulfilment-project-id        = var.load-gen_peer_project
+    fulfilment-confirmed-project    = var.load-gen_peer_project
+    fulfilment-confirmed-topic-name = local.fulfilment_confirmed_topic_name
+    offline-receipt-topic-project   = var.load-gen_peer_project
+    qm-undelivered-project-id       = var.load-gen_peer_project
+    qm-undelivered-topic-name       = local.qm_undelivered_topic_name
   }
 }
 

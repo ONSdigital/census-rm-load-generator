@@ -100,3 +100,7 @@ variable "load-gen_peer_project" {
   default     = ""
 }
 
+variable "peer_environment" {
+  description = "The peered project environment name"
+  default     = ""
+}

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ "$ENV_CONFIG" ]; then
+  source $ENV_CONFIG
+fi
+
 if [ -z "$ENV" ]; then
   echo "Missing ENV variable"
   exit 1
@@ -24,9 +28,10 @@ region = "$GCP_REGION"
 gcp_project = "$GCP_PROJECT"
 EOS
 
-if [ "$RM_PEER_PROJECT" ]; then
+if [ "$RM_PEER_ENV" ]; then
     cat >> terraform.tfvars << EOS
-load-gen_peer_project = "$RM_PEER_PROJECT"
+load-gen_peer_project = "census-rm-$RM_PEER_ENV"
+peer_environment = "$RM_PEER_ENV"
 EOS
 fi
 
@@ -61,3 +66,21 @@ else
 fi
 
 terraform apply -var "gcp_project=$GCP_PROJECT"
+
+gcloud container clusters get-credentials rm-k8s-cluster \
+    --region $GCP_REGION \
+    --project $GCP_PROJECT
+
+kubectl config set-context $(kubectl config current-context)
+
+if [ "$RABBIT_HOST" ]; then
+  kubectl create secret generic rabbitmq-host --from-literal=rabbitmq-host=$RABBIT_HOST --from-literal=rabbitmq-port=5672
+fi
+
+if [ "$RABBIT_PASS" ]; then
+  kubectl create secret generic rabbitmq-cred --from-literal=rabbit_password=$RABBIT_PASS --from-literal=rabbit_username=guest
+fi
+
+if [ "$DB_HOST" ]; then
+  kubectl create secret generic db-config --from-literal=db-host=$DB_HOST --from-literal=db-name=rm --from-literal=db-port=5432
+fi
