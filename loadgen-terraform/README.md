@@ -13,7 +13,7 @@ This terraform can be used to creat an environment/k8s cluster from which we can
 
 
 
-If you decide not to follow those steps, the following is info for whay rabbitmq and postgres require
+If you decide not to follow those steps, the following is info for what rabbitmq and postgres require
 ###  RabbitMQ Access
 
 - To access the RabbitMQ cluster the target project will need to be peered with the load-gen project
