@@ -23,6 +23,7 @@ spec:
         env: dev
         version: "0.1.0dev"
     spec:
+      serviceAccountName: pubsub-loadgen
       securityContext:
         fsGroup: 1000
       containers:
@@ -49,12 +50,17 @@ spec:
               cpu: "0.5"
               memory: "2Gi"
           volumeMounts:
-            - name: gcp-credentials-volume
-              mountPath: /gcp-credentials
             - name: cloud-sql-certs
               mountPath: "/home/loadgenerator/postgresql"
               readOnly: true
           env:
+            - name: OFFLINE_RECEIPT_TOPIC_NAME
+              value: "offline-receipt-topic"
+            - name: OFFLINE_RECEIPT_TOPIC_PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: offline-receipt-topic-project
             - name: RECEIPT_TOPIC_ID
               valueFrom:
                 configMapKeyRef:
@@ -64,28 +70,57 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: pubsub-config
-                  key: subscription-project-id
+                  key: receipt-topic-project-id
+            - name: FULFILMENT_CONFIRMED_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: fulfilment-confirmed-topic-name
+            - name: FULFILMENT_CONFIRMED_PROJECT
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: fulfilment-confirmed-project
             - name: QM_UNDELIVERED_PROJECT_ID
               valueFrom:
                 configMapKeyRef:
-                  name: project-config
-                  key: project-name
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/gcp-credentials/service-account-key.json"
+                  name: pubsub-config
+                  key: qm-undelivered-project-id
+            - name: EQ_FULFILMENT_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: eq-fulfilment-topic-name
+            - name: EQ_FULFILMENT_PROJECT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: eq-fulfilment-project-id
+            - name: QM_UNDELIVERED_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pubsub-config
+                  key: qm-undelivered-topic-name
             - name: RABBIT_HOST
-              value: "rabbitmq"
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-host
+                  name: rabbitmq-host
             - name: RABBIT_PORT
-              value: "5672"
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-port
+                  name: rabbitmq-host
             - name: RABBIT_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: rabbitmq
-                  key: rabbitmq-username
+                  key: RABBIT_USERNAME
+                  name: rabbitmq-cred
             - name: RABBIT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: rabbitmq
-                  key: rabbitmq-password
+                  key: RABBIT_PASSWORD
+                  name: rabbitmq-cred
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -112,9 +147,6 @@ spec:
                   key: db-name
                   name: db-config
       volumes:
-        - name: gcp-credentials-volume
-          secret:
-            secretName: pubsub-credentials
         - name: cloud-sql-certs
           secret:
             defaultMode: 256
