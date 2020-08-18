@@ -19,6 +19,7 @@ If you decide not to follow those steps, the following is info for what rabbitmq
 - To access the RabbitMQ cluster the target project will need to be peered with the load-gen project
 - A k8s secret "rabbitmq" is expected by the load-gen deployment so this will need to be created, note: the host needs
 to be the internal IP of rabbit as the k8s internal DNS is not visible (so using "rabbitmq" as the host wont work)
+- The Pod address range of the load generating cluster needs to be added to the LoadBalancerSourceRanges of the rabbitmq service in the target k8s cluster
 
 
 ###  Postgres Access
