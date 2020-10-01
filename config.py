@@ -7,7 +7,7 @@ class Config:
     RABBITMQ_VHOST = os.getenv('RABBITMQ_VHOST', '/')
     RABBITMQ_EXCHANGE = os.getenv('RABBITMQ_EXCHANGE', '')
     RABBITMQ_USER = os.getenv('RABBIT_USER', 'rmquser')
-    RABBITMQ_PASSWORD = os.getenv('RABBIT_PASSWORD', 'rmqp455w0rd')
+    RABBITMQ_PASSWORD = os.getenv('RABBIT_PASSWORD', 'qpassword')
     DB_USERNAME = os.getenv('DB_USERNAME', 'postgres')
     DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
     DB_HOST = os.getenv('DB_HOST', 'localhost')
