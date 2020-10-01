@@ -78,7 +78,7 @@ if [ "$RABBIT_HOST" ]; then
 fi
 
 if [ "$RABBIT_PASS" ]; then
-  kubectl create secret generic rabbitmq-cred --from-literal=rabbit_password=$RABBIT_PASS --from-literal=rabbit_username=guest
+  kubectl create secret generic rabbitmq-cred --from-literal=rabbit_password=$RABBIT_PASS --from-literal=rabbit_username=rmquser
 fi
 
 if [ "$DB_HOST" ]; then
