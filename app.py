@@ -12,25 +12,25 @@ from utilities.rabbit_context import RabbitContext
 
 message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_settings = {
-    "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": 0.001},
-    "SURVEY_LAUNCHED": {"weight": 33, "chaos": 0.001},
-    "RESPONSE_RECEIVED": {"weight": 16, "chaos": 0.001},
-    "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": 0.001},
-    "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": 0.001},
-    "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": 0.001},
-    "REFUSAL_RECEIVED": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.sms": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.print": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.EQ.sms": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": 0.001},
-    "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": 0.001},
-    "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": 0.001},
-    "ADDRESS_NOT_VALID": {"weight": 1, "chaos": 0.001},
-    "ADDRESS_TYPE_CHANGED": {"weight": 1, "chaos": 0.001},
-    "ADDRESS_MODIFIED": {"weight": 1, "chaos": 0.001},
-    "PRINT_CASE_SELECTED": {"weight": 1, "chaos": 0.001},
-    "QUESTIONNAIRE_LINKED": {"weight": 1, "chaos": 0.001}
+    "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": 0},
+    "SURVEY_LAUNCHED": {"weight": 33, "chaos": 0},
+    "RESPONSE_RECEIVED": {"weight": 16, "chaos": 0},
+    "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": 0},
+    "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": 0},
+    "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": 0},
+    "REFUSAL_RECEIVED": {"weight": 1, "chaos": 0},
+    "FULFILMENT_REQUESTED.sms": {"weight": 1, "chaos": 0},
+    "FULFILMENT_REQUESTED.print": {"weight": 1, "chaos": 0},
+    "FULFILMENT_REQUESTED.EQ.sms": {"weight": 1, "chaos": 0},
+    "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": 0},
+    "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": 0},
+    "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": 0},
+    "NEW_ADDRESS_REPORTED": {"weight": 0, "chaos": 0},
+    "ADDRESS_NOT_VALID": {"weight": 1, "chaos": 0},
+    "ADDRESS_TYPE_CHANGED": {"weight": 0, "chaos": 0},
+    "ADDRESS_MODIFIED": {"weight": 1, "chaos": 0},
+    "PRINT_CASE_SELECTED": {"weight": 1, "chaos": 0},
+    "QUESTIONNAIRE_LINKED": {"weight": 1, "chaos": 0}
 }
 message_type_randomiser = []
 
@@ -51,7 +51,7 @@ def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
     sql_query = f'''
     SELECT c.case_id, c.case_ref, c.case_type, c.address_level, c.region, c.treatment_code, u.uac, u.qid
     FROM casev2.cases c, casev2.uac_qid_link u
-    WHERE u.caze_case_id = c.case_id
+    WHERE u.caze_case_id = c.case_id AND c.receipt_received = 'false'
     LIMIT {num_of_cases_to_fetch};'''
 
     db_result = execute_sql_query(sql_query)
@@ -462,7 +462,7 @@ def prepare_address_type_changed(random_delay, random_case, random_chaos):
                     "address": {
                         "organisationName": "XXXXXXXXXXXXX",
                         "addressType": "CE",
-                        "estabType": "XXX"
+                        "estabType": "HOSPITAL"
                     }
                 }
             }
@@ -536,7 +536,7 @@ def prepare_new_address_reported(random_delay, random_case, random_chaos):
                         "region": "E",
                         "addressType": "SPG",
                         "addressLevel": "U",
-                        "estabType": "Residential Caravaner",
+                        "estabType": "RESIDENTIAL CARAVAN",
                         "latitude": "50.917428",
                         "longitude": "-1.238193"
                     }
@@ -744,4 +744,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    while True:
+        main()
