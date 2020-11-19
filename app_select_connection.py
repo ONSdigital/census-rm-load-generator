@@ -1,3 +1,4 @@
+import concurrent
 import json
 import random
 import time
@@ -8,6 +9,7 @@ from google.cloud import pubsub_v1
 
 from config import Config
 from utilities.db_helper import execute_sql_query
+from utilities.pub import SuperBunny
 from utilities.rabbit_context import RabbitContext
 
 message_rate = int(Config.MESSAGE_RATE)  # Per second
@@ -691,6 +693,7 @@ def prepare_messages_to_be_sent():
 
 
 def send_rabbit_message(rabbit, message):
+    print('About to send cuntting msg')
     rabbit.publish_message(message['message_body'], 'application/json', None, routing_key=message['topic'])
 
 
@@ -711,37 +714,53 @@ def send_pubsub_message(publisher, message):
 def send_the_messages():
     publisher = pubsub_v1.PublisherClient()
 
-    # message = json.dumps({
-    #     "event": {
-    #         "type": "SURVEY_LAUNCHED",
-    #         "source": "CONTACT_CENTRE_API",
-    #         "channel": "CC",
-    #         "dateTime": f"{datetime.utcnow().isoformat()}Z",
-    #         "transactionId": str(uuid.uuid4())
-    #     },
-    #     "payload": {
-    #         "response": {
-    #             "questionnaireId": '034343434r34',
-    #             "caseId":  str(uuid.uuid4()),
-    #             "agentId": "cc_000351"
-    #         }
-    #     }
-    # })
-
-    x = range(0, 1000000)
-
-    with RabbitContext(exchange='events') as rabbit:
-        for _ in x:
+    with SuperBunny(exchange='events') as rabbit:
+        time.sleep(5)
+        for message in messages_to_send:
             # time.sleep(message['delay'])
-            rabbit.publish_message(message, 'application/json', None,
-                                   routing_key='event.fulfilment.request')
 
-            #
-            #     send_rabbit_message(rabbit, message)
-            # elif message['type'] == 'PUBSUB_EQ':
-            #     send_pubsub_eq_receipt_message(publisher, message)
-            # elif message['type'] == 'PUBSUB':
-            #     send_pubsub_message(publisher, message)
+            if message['type'] == 'RABBIT':
+                send_rabbit_message(rabbit, message)
+            elif message['type'] == 'PUBSUB_EQ':
+                send_pubsub_eq_receipt_message(publisher, message)
+            elif message['type'] == 'PUBSUB':
+                send_pubsub_message(publisher, message)
+
+#     msg_chunks = split_msgs(messages_to_send)
+#
+#     with concurrent.futures.ThreadPoolExecutor() as executor:
+#         futures = []
+#
+#         for msgs in msg_chunks:
+#             futures.append(executor.submit(send_msgs, msgs=msgs, info='proc'))
+#
+#         for future in concurrent.futures.as_completed(futures):
+#             print(future.result())
+#
+#
+# def split_msgs(msgs):
+#     size = len(msgs) // 4
+#
+#     for i in range(0, len(msgs), size):
+#         yield msgs[i:i + size]
+#
+#
+# def send_msgs(msgs=None, info='blah'):
+#     publisher = pubsub_v1.PublisherClient()
+#     print('Running ', info)
+#
+#     with RabbitContext(exchange='events') as rabbit:
+#         for message in msgs:
+#             # time.sleep(message['delay'])
+#
+#             if message['type'] == 'RABBIT':
+#                 send_rabbit_message(rabbit, message)
+#             elif message['type'] == 'PUBSUB_EQ':
+#                 send_pubsub_eq_receipt_message(publisher, message)
+#             elif message['type'] == 'PUBSUB':
+#                 send_pubsub_message(publisher, message)
+#
+#     print('Finished ', info)
 
 
 def main():
@@ -750,11 +769,11 @@ def main():
     print("Preparing the data...")
 
     # Load a bunch of cases from the DB
-    # get_cases_from_db()
-    # get_unadressed_qids_from_db()
+    get_cases_from_db()
+    get_unadressed_qids_from_db()
 
     # Prepare message to be sent, based on weightings etc
-    # prepare_messages_to_be_sent()
+    prepare_messages_to_be_sent()
 
     # Send the Rabbit & Pubsub messages on separate threads
     print('Running load test...')

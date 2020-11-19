@@ -1,5 +1,6 @@
 import argparse
 import json
+import uuid
 from datetime import datetime, timedelta
 
 from config import Config
@@ -15,21 +16,40 @@ def parse_arguments():
 
 def spam(queue, duration):
     end_time = datetime.utcnow() + timedelta(0, 0, 0, 0, float(duration))
-    queue = queue
     message = json.dumps(
         {
             "message": "This is to spam",
         })
-    with RabbitContext(exchange=Config.RABBITMQ_EXCHANGE) as rabbit:
+
+    # message = json.dumps({
+    #     "event": {
+    #         "type": "SURVEY_LAUNCHED",
+    #         "source": "CONTACT_CENTRE_API",
+    #         "channel": "CC",
+    #         "dateTime": f"{datetime.utcnow().isoformat()}Z",
+    #         "transactionId": str(uuid.uuid4())
+    #     },
+    #     "payload": {
+    #         "response": {
+    #             "questionnaireId": '034343434r34',
+    #             "caseId":  str(uuid.uuid4()),
+    #             "agentId": "cc_000351"
+    #         }
+    #     }
+    # })
+
+    with RabbitContext(exchange='') as rabbit:
         while datetime.utcnow() < end_time:
             rabbit.publish_message(
                 message=message,
-                content_type='application/json', headers='', routing_key='event.response.authentication')
+                content_type='application/json', headers='', routing_key='Case.Responses')
 
 
 def main():
-    args = parse_arguments()
-    spam(args.queue, args.duration)
+    # args = parse_arguments()
+    # spam(args.queue, args.duration)
+    # spam('event.response.authentication', 100)
+    spam('event.response.receipt', 100)
 
 
 if __name__ == "__main__":

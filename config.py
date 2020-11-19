@@ -25,10 +25,10 @@ class Config:
     FULFILMENT_CONFIRMED_PROJECT = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'fulfilment-confirmed-project')
     EQ_FULFILMENT_TOPIC_NAME = "eq-fulfilment-topic"
     EQ_FULFILMENT_PROJECT_NAME = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'eq-fulfilment-project')
-    CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "50")
-    UNADDRESSED_QIDS_TO_FETCH = os.getenv("UNADDRESSED_QIDS_TO_FETCH", "20")
-    MESSAGE_RATE = os.getenv("MESSAGE_RATE", "1000")  # Messages per second
-    TOTAL_MESSAGES_TO_SEND = os.getenv("TOTAL_MESSAGES_TO_SEND", "10000")
-    API_CALL_RATE = os.getenv("API_CALL_RATE", "1000")  # Calls per second
-    TOTAL_API_CALLS = os.getenv("TOTAL_API_CALLS", "10000")
+    CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "100000")
+    UNADDRESSED_QIDS_TO_FETCH = os.getenv("UNADDRESSED_QIDS_TO_FETCH", "200000")
+    MESSAGE_RATE = os.getenv("MESSAGE_RATE", "8000")  # Messages per second
+    TOTAL_MESSAGES_TO_SEND = os.getenv("TOTAL_MESSAGES_TO_SEND", "1000000")
+    API_CALL_RATE = os.getenv("API_CALL_RATE", "1")  # Calls per second
+    TOTAL_API_CALLS = os.getenv("TOTAL_API_CALLS", "100000")
     CASE_API_URL = os.getenv("CASE_API_URL", "http://case-api:80")
