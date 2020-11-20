@@ -44,11 +44,11 @@ spec:
           stdin: true
           resources:
             requests:
-              cpu: "3"
-              memory: "10Gi"
+              cpu: "1"
+              memory: "2Gi"
             limits:
-              cpu: "3"
-              memory: "10Gi"
+              cpu: "1"
+              memory: "2Gi"
           volumeMounts:
             - name: cloud-sql-certs
               mountPath: "/home/loadgenerator/postgresql"

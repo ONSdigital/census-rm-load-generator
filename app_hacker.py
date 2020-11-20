@@ -25,7 +25,7 @@ message_settings = {
     "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": 0.001},
     "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": 0.001},
     "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": 0.001},
-    # "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": 0.001},
+    "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": 0.001},
     "ADDRESS_NOT_VALID": {"weight": 1, "chaos": 0.001},
     "ADDRESS_TYPE_CHANGED": {"weight": 1, "chaos": 0.001},
     "ADDRESS_MODIFIED": {"weight": 1, "chaos": 0.001},
@@ -711,12 +711,33 @@ def send_pubsub_message(publisher, message):
 def send_the_messages():
     publisher = pubsub_v1.PublisherClient()
 
-    with RabbitContext(exchange='events') as rabbit:
-        for message in messages_to_send:
-            # time.sleep(message['delay'])
+    # message = json.dumps({
+    #     "event": {
+    #         "type": "SURVEY_LAUNCHED",
+    #         "source": "CONTACT_CENTRE_API",
+    #         "channel": "CC",
+    #         "dateTime": f"{datetime.utcnow().isoformat()}Z",
+    #         "transactionId": str(uuid.uuid4())
+    #     },
+    #     "payload": {
+    #         "response": {
+    #             "questionnaireId": '034343434r34',
+    #             "caseId":  str(uuid.uuid4()),
+    #             "agentId": "cc_000351"
+    #         }
+    #     }
+    # })
 
-            if message['type'] == 'RABBIT':
-                send_rabbit_message(rabbit, message)
+    x = range(0, 1000000)
+
+    with RabbitContext(exchange='events') as rabbit:
+        for _ in x:
+            # time.sleep(message['delay'])
+            rabbit.publish_message(message, 'application/json', None,
+                                   routing_key='event.fulfilment.request')
+
+            #
+            #     send_rabbit_message(rabbit, message)
             # elif message['type'] == 'PUBSUB_EQ':
             #     send_pubsub_eq_receipt_message(publisher, message)
             # elif message['type'] == 'PUBSUB':
@@ -729,11 +750,11 @@ def main():
     print("Preparing the data...")
 
     # Load a bunch of cases from the DB
-    get_cases_from_db()
-    get_unadressed_qids_from_db()
+    # get_cases_from_db()
+    # get_unadressed_qids_from_db()
 
     # Prepare message to be sent, based on weightings etc
-    prepare_messages_to_be_sent()
+    # prepare_messages_to_be_sent()
 
     # Send the Rabbit & Pubsub messages on separate threads
     print('Running load test...')
