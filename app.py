@@ -733,8 +733,8 @@ def send_the_messages():
 
     with RabbitContext(exchange='events') as rabbit:
         for message in messages_to_send:
-            # if Config.MESSAGE_RATE_THROTTLE:
-            #     time.sleep(message['delay'])
+            if Config.MESSAGE_RATE_THROTTLE:
+                time.sleep(message['delay'])
 
             if message['type'] == 'RABBIT':
                 send_rabbit_message(rabbit, message)

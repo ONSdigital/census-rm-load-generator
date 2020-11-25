@@ -25,7 +25,7 @@ class Config:
     FULFILMENT_CONFIRMED_PROJECT = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'fulfilment-confirmed-project')
     EQ_FULFILMENT_TOPIC_NAME = "eq-fulfilment-topic"
     EQ_FULFILMENT_PROJECT_NAME = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'eq-fulfilment-project')
-    CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "1000000")
+    CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "10000000")
     UNADDRESSED_QIDS_TO_FETCH = os.getenv("UNADDRESSED_QIDS_TO_FETCH", "100000")
     MESSAGE_RATE_THROTTLE = os.getenv("MESSAGE_RATE_THROTTLE", False)  # will ignore
     MESSAGE_RATE = os.getenv("MESSAGE_RATE", "10000")  # Messages per second
