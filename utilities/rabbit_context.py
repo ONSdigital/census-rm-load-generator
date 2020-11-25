@@ -1,5 +1,5 @@
 import pika
-from pika.spec import PERSISTENT_DELIVERY_MODE
+from pika.spec import PERSISTENT_DELIVERY_MODE, TRANSIENT_DELIVERY_MODE
 
 from config import Config
 from utilities.exceptions import RabbitConnectionClosedError

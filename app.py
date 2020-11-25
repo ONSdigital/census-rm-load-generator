@@ -63,7 +63,9 @@ def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
     SELECT c.case_id, c.case_ref, c.case_type, c.address_level, c.region, c.treatment_code, u.uac, u.qid
     FROM casev2.cases c, casev2.uac_qid_link u
     WHERE u.caze_case_id = c.case_id
-    LIMIT {num_of_cases_to_fetch};'''
+    ORDER BY c.case_ref
+    LIMIT {num_of_cases_to_fetch};
+    '''
 
     db_result = execute_sql_query(sql_query)
 
@@ -731,8 +733,8 @@ def send_the_messages():
 
     with RabbitContext(exchange='events') as rabbit:
         for message in messages_to_send:
-            if Config.MESSAGE_RATE_THROTTLE:
-                time.sleep(message['delay'])
+            # if Config.MESSAGE_RATE_THROTTLE:
+            #     time.sleep(message['delay'])
 
             if message['type'] == 'RABBIT':
                 send_rabbit_message(rabbit, message)
