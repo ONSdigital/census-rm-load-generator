@@ -26,9 +26,11 @@ class Config:
     EQ_FULFILMENT_TOPIC_NAME = "eq-fulfilment-topic"
     EQ_FULFILMENT_PROJECT_NAME = os.getenv('FULFILMENT_CONFIRMED_PROJECT', 'eq-fulfilment-project')
     CASES_TO_FETCH = os.getenv("CASES_TO_FETCH", "1000000")
+    OFFSET_FOR_CASES = os.getenv("OFFSET_FOR_CASES", 0)  # Used to Select case range via Offset
     UNADDRESSED_QIDS_TO_FETCH = os.getenv("UNADDRESSED_QIDS_TO_FETCH", "100000")
-    MESSAGE_RATE_THROTTLE = os.getenv("MESSAGE_RATE_THROTTLE", False)  # will ignore
-    MESSAGE_RATE = os.getenv("MESSAGE_RATE", "10000")  # Messages per second
+    OFFSET_FOR_UNADDRESSED_QIDS = os.getenv("OFFSET_FOR_UNADDRESSED_QIDS", 0)  # Used to Select qids range via Offset
+    MESSAGE_RATE_THROTTLE = os.getenv("MESSAGE_RATE_THROTTLE", False)  # This publishes with no delay
+    MESSAGE_RATE = os.getenv("MESSAGE_RATE", "10000")  # Messages per second, is MESSAGE_RATE_THROTTLE enabled
     TOTAL_MESSAGES_TO_SEND = os.getenv("TOTAL_MESSAGES_TO_SEND", "1000000")
     CHAOS = os.getenv('CHAOS', 0)
     API_CALL_RATE = os.getenv("API_CALL_RATE", "1000")  # Calls per second

@@ -58,13 +58,14 @@ def prepare_randomiser():
             message_type_randomiser.append(key)
 
 
-def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
+def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH), offset=int(Config.OFFSET_FOR_CASES)):
     sql_query = f'''
     SELECT c.case_id, c.case_ref, c.case_type, c.address_level, c.region, c.treatment_code, u.uac, u.qid
     FROM casev2.cases c, casev2.uac_qid_link u
     WHERE u.caze_case_id = c.case_id
     ORDER BY c.case_ref
-    LIMIT {num_of_cases_to_fetch};
+    LIMIT {num_of_cases_to_fetch}
+    OFFSET {offset};
     '''
 
     db_result = execute_sql_query(sql_query)
@@ -84,12 +85,14 @@ def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
         test_cases.append(case)
 
 
-def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNADDRESSED_QIDS_TO_FETCH)):
+def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNADDRESSED_QIDS_TO_FETCH),
+                                offset=int(Config.OFFSET_FOR_UNADDRESSED_QIDS)):
     sql_query = f'''
         SELECT u.uac, u.qid
         FROM casev2.uac_qid_link u
         WHERE caze_case_id IS NULL
-        LIMIT {num_of_unaddressed_qids_to_fetch};'''
+        LIMIT {num_of_unaddressed_qids_to_fetch}
+        OFFSET {offset}; '''
 
     db_result = execute_sql_query(sql_query)
 
