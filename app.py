@@ -1,5 +1,6 @@
 import json
 import random
+import string
 import time
 import uuid
 from datetime import datetime
@@ -10,27 +11,37 @@ from config import Config
 from utilities.db_helper import execute_sql_query
 from utilities.rabbit_context import RabbitContext
 
+ESTAB_TYPES = ['HALL OF RESIDENCE', 'CARE HOME', 'HOSPITAL', 'HOSPICE', 'MENTAL HEALTH HOSPITAL',
+               'MEDICAL CARE OTHER', 'BOARDING SCHOOL', 'LOW/MEDIUM SECURE MENTAL HEALTH',
+               'HIGH SECURE MENTAL HEALTH', 'HOTEL', 'YOUTH HOSTEL', 'HOSTEL', 'MILITARY SLA', 'MILITARY US SLA',
+               'RELIGIOUS COMMUNITY', 'RESIDENTIAL CHILDRENS HOME', 'EDUCATION OTHER', 'PRISON',
+               'IMMIGRATION REMOVAL CENTRE', 'APPROVED PREMISES', 'ROUGH SLEEPER', 'STAFF ACCOMMODATION',
+               'CAMPHILL', 'HOLIDAY PARK', 'HOUSEHOLD', 'SHELTERED ACCOMMODATION', 'RESIDENTIAL CARAVAN',
+               'RESIDENTIAL BOAT', 'GATED APARTMENTS', 'MOD HOUSEHOLDS', 'FOREIGN OFFICES', 'CASTLES', 'GRT SITE',
+               'MILITARY SFA', 'EMBASSY', 'ROYAL HOUSEHOLD', 'CARAVAN', 'MARINA', 'TRAVELLING PERSONS',
+               'TRANSIENT PERSONS', 'MIGRANT WORKERS', 'MILITARY US SFA']
+
 message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_settings = {
-    "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": 0.001},
-    "SURVEY_LAUNCHED": {"weight": 33, "chaos": 0.001},
-    "RESPONSE_RECEIVED": {"weight": 16, "chaos": 0.001},
-    "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": 0.001},
-    "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": 0.001},
-    "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": 0.001},
-    "REFUSAL_RECEIVED": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.sms": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.print": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.EQ.sms": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": 0.001},
-    "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": 0.001},
-    "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": 0.001},
-    "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": 0.001},
-    "ADDRESS_NOT_VALID": {"weight": 1, "chaos": 0.001},
-    "ADDRESS_TYPE_CHANGED": {"weight": 1, "chaos": 0.001},
-    "ADDRESS_MODIFIED": {"weight": 1, "chaos": 0.001},
-    "PRINT_CASE_SELECTED": {"weight": 1, "chaos": 0.001},
-    "QUESTIONNAIRE_LINKED": {"weight": 1, "chaos": 0.001}
+    "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": Config.CHAOS},
+    "SURVEY_LAUNCHED": {"weight": 35, "chaos": Config.CHAOS},
+    "RESPONSE_RECEIVED": {"weight": 16, "chaos": Config.CHAOS},
+    "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": Config.CHAOS},
+    "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": Config.CHAOS},
+    "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": Config.CHAOS},
+    "REFUSAL_RECEIVED": {"weight": 1, "chaos": Config.CHAOS},
+    "FULFILMENT_REQUESTED.sms": {"weight": 1, "chaos": Config.CHAOS},
+    "FULFILMENT_REQUESTED.print": {"weight": 1, "chaos": Config.CHAOS},
+    "FULFILMENT_REQUESTED.EQ.sms": {"weight": 1, "chaos": Config.CHAOS},
+    "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": Config.CHAOS},
+    "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": Config.CHAOS},
+    "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": Config.CHAOS},
+    "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": Config.CHAOS},
+    "ADDRESS_NOT_VALID": {"weight": 1, "chaos": Config.CHAOS},
+    "ADDRESS_TYPE_CHANGED": {"weight": 1, "chaos": Config.CHAOS},
+    "ADDRESS_MODIFIED": {"weight": 1, "chaos": Config.CHAOS},
+    "PRINT_CASE_SELECTED": {"weight": 1, "chaos": Config.CHAOS},
+    "QUESTIONNAIRE_LINKED": {"weight": 1, "chaos": Config.CHAOS}
 }
 message_type_randomiser = []
 
@@ -47,12 +58,15 @@ def prepare_randomiser():
             message_type_randomiser.append(key)
 
 
-def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
+def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH), offset=int(Config.OFFSET_FOR_CASES)):
     sql_query = f'''
     SELECT c.case_id, c.case_ref, c.case_type, c.address_level, c.region, c.treatment_code, u.uac, u.qid
     FROM casev2.cases c, casev2.uac_qid_link u
     WHERE u.caze_case_id = c.case_id
-    LIMIT {num_of_cases_to_fetch};'''
+    ORDER BY c.case_ref
+    LIMIT {num_of_cases_to_fetch}
+    OFFSET {offset};
+    '''
 
     db_result = execute_sql_query(sql_query)
 
@@ -71,12 +85,14 @@ def get_cases_from_db(num_of_cases_to_fetch=int(Config.CASES_TO_FETCH)):
         test_cases.append(case)
 
 
-def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNADDRESSED_QIDS_TO_FETCH)):
+def get_unadressed_qids_from_db(num_of_unaddressed_qids_to_fetch=int(Config.UNADDRESSED_QIDS_TO_FETCH),
+                                offset=int(Config.OFFSET_FOR_UNADDRESSED_QIDS)):
     sql_query = f'''
         SELECT u.uac, u.qid
         FROM casev2.uac_qid_link u
         WHERE caze_case_id IS NULL
-        LIMIT {num_of_unaddressed_qids_to_fetch};'''
+        LIMIT {num_of_unaddressed_qids_to_fetch}
+        OFFSET {offset}; '''
 
     db_result = execute_sql_query(sql_query)
 
@@ -115,6 +131,14 @@ def get_chaotic_case_ref(case_ref, random_chaos, one_in_n):
         return str(random.randint(100000000000, 999999999999))
     else:
         return case_ref
+
+
+def get_random_estab_type(random_chaos, one_in_n=1):
+    if random_chaos and random.randint(1, one_in_n) == 1:
+        letters = string.ascii_uppercase
+        return ''.join(random.choice(letters) for i in range(10))
+    else:
+        return random.choice(ESTAB_TYPES)
 
 
 def prepare_respondent_authenticated(random_delay, random_case, random_chaos):
@@ -462,7 +486,7 @@ def prepare_address_type_changed(random_delay, random_case, random_chaos):
                     "address": {
                         "organisationName": "XXXXXXXXXXXXX",
                         "addressType": "CE",
-                        "estabType": "XXX"
+                        "estabType": get_random_estab_type(random_chaos)
                     }
                 }
             }
@@ -536,7 +560,7 @@ def prepare_new_address_reported(random_delay, random_case, random_chaos):
                         "region": "E",
                         "addressType": "SPG",
                         "addressLevel": "U",
-                        "estabType": "Residential Caravaner",
+                        "estabType": get_random_estab_type(random_chaos),
                         "latitude": "50.917428",
                         "longitude": "-1.238193"
                     }
@@ -713,7 +737,8 @@ def send_the_messages():
 
     with RabbitContext(exchange='events') as rabbit:
         for message in messages_to_send:
-            time.sleep(message['delay'])
+            if Config.MESSAGE_RATE_THROTTLE:
+                time.sleep(message['delay'])
 
             if message['type'] == 'RABBIT':
                 send_rabbit_message(rabbit, message)
