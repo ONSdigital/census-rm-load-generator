@@ -135,7 +135,7 @@ def get_random_estab_type(random_chaos, one_in_n=1):
         letters = string.ascii_uppercase
         return ''.join(random.choice(letters) for i in range(10))
     else:
-        return ESTAB_TYPES[random.randint(0, len(ESTAB_TYPES) - 1)]
+        return random.choice(ESTAB_TYPES)
 
 
 def prepare_respondent_authenticated(random_delay, random_case, random_chaos):
