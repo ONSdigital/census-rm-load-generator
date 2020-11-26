@@ -25,7 +25,7 @@ message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_settings = {
     "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": Config.CHAOS},
     "SURVEY_LAUNCHED": {"weight": 35, "chaos": Config.CHAOS},
-    "RESPONSE_RECEIVED": {"weight": 35, "chaos": Config.CHAOS},
+    "RESPONSE_RECEIVED": {"weight": 16, "chaos": Config.CHAOS},
     "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": Config.CHAOS},
     "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": Config.CHAOS},
     "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": Config.CHAOS},
@@ -132,8 +132,11 @@ def get_chaotic_case_ref(case_ref, random_chaos, one_in_n):
 
 def get_random_estab_type(random_chaos, one_in_n=1):
     if random_chaos and random.randint(1, one_in_n) == 1:
-        return "BAD ESTAB TYPE"
-    return ESTAB_TYPES[random.randint(0, len(ESTAB_TYPES) - 1)]
+        letters = string.ascii_uppercase
+        return ''.join(random.choice(letters) for i in range(10))
+    else:
+        return ESTAB_TYPES[random.randint(0, len(ESTAB_TYPES) - 1)]
+
 
 
 def prepare_respondent_authenticated(random_delay, random_case, random_chaos):
