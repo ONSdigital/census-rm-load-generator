@@ -138,7 +138,6 @@ def get_random_estab_type(random_chaos, one_in_n=1):
         return ESTAB_TYPES[random.randint(0, len(ESTAB_TYPES) - 1)]
 
 
-
 def prepare_respondent_authenticated(random_delay, random_case, random_chaos):
     message_contents = {
         "event": {
