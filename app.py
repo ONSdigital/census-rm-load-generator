@@ -24,8 +24,8 @@ ESTAB_TYPES = ['HALL OF RESIDENCE', 'CARE HOME', 'HOSPITAL', 'HOSPICE', 'MENTAL 
 message_rate = int(Config.MESSAGE_RATE)  # Per second
 message_settings = {
     "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": Config.CHAOS},
-    "SURVEY_LAUNCHED": {"weight": 33, "chaos": Config.CHAOS},
-    "RESPONSE_RECEIVED": {"weight": 16, "chaos": Config.CHAOS},
+    "SURVEY_LAUNCHED": {"weight": 35, "chaos": Config.CHAOS},
+    "RESPONSE_RECEIVED": {"weight": 35, "chaos": Config.CHAOS},
     "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": Config.CHAOS},
     "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": Config.CHAOS},
     "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": Config.CHAOS},
@@ -125,8 +125,7 @@ def get_chaotic_phone_number(phone_number, random_chaos, one_in_n):
 
 def get_chaotic_case_ref(case_ref, random_chaos, one_in_n):
     if random_chaos and random.randint(1, one_in_n) == 1:
-        letters = string.ascii_uppercase
-        return ''.join(random.choice(letters) for i in range(10))
+        return str(random.randint(100000000000, 999999999999))
     else:
         return case_ref
 
