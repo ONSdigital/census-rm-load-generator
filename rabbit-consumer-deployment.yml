@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: perf-test
+  name: perf-test-consume
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: perf-test
+  template:
+    metadata:
+      labels:
+        app: perf-test
+    spec:
+      containers:
+        - image: pivotalrabbitmq/perf-test
+          imagePullPolicy: Always
+          name: perf-test
+          args:
+            [
+              "--uri",
+              "amqp://$RABBIT_USERNAME:$RABBIT_PASSWORD@$RABBIT_HOST",
+              "--rate",
+              "150",
+              "--producers",
+              "0",
+              "--consumers",
+              "50",
+              "--exchange",
+              "events",
+              "--queue",
+              "case.rh.case",
+              "--predeclared"
+            ]
+#          # Resource limits/requests?
+#          resources:
+#            requests:
+#              cpu: "1"
+#              memory: "1Gi"
+#            limits:
+#              cpu: "1"
+#              memory: "1Gi"
+          env:
+            - name: RABBIT_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-host
+                  name: rabbitmq-host
+            - name: RABBIT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_USERNAME
+                  name: rabbitmq-cred
+            - name: RABBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: RABBIT_PASSWORD
+                  name: rabbitmq-cred
