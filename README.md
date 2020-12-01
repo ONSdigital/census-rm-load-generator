@@ -37,4 +37,4 @@ Run:
 ## Rabbit consumer
 
 The rabbit-consumer-deployment.yml YAML file is a template for a test rabbit consumer driven by the rabbitmq perf test image.
-To use it, replace the <NAME>, <USERNAME>, <PASSWORD>, <HOST>, <EXCHANGE> and <QUEUE_NAME> placeholders in the file, and edit the settings in the args for the queue name and desired number and rate of consumers.
+To use it, replace the <NAME>, <USERNAME>, <PASSWORD>, <HOST>, <EXCHANGE>, <ROUTING_KEY> and <QUEUE_NAME> placeholders in the file, and edit the settings in the args for the queue name and desired number and rate of consumers.
