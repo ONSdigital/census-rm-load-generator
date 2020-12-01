@@ -34,3 +34,7 @@ Run:
 2. `make connect-to-pod`
 3. `python app.py`
 
+## Rabbit consumer
+
+The rabbit-consumer-deployment.yml YAML file is a template for a test rabbit consumer driven by the rabbitmq perf test image.
+To use it, replace the <NAME>, <USERNAME>, <PASSWORD> and <HOST> placeholders in the file, and edit the settings in the args for the queue name and desired number and rate of consumers.

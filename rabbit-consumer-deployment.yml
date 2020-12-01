@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: perf-test
-  name: perf-test-consume-rh-case
+  name: perf-test-consume-<QUEUE>
 spec:
   replicas: 1
   selector:
@@ -23,15 +23,15 @@ spec:
               "--uri",
               "amqp://<USERNAME>:<PASSWORD>@<HOST>",
               "--rate",
-              "150",
+              "1",  # messages per second
               "--producers",
               "0",
               "--consumers",
-              "50",
+              "1",
               "--exchange",
-              "events",
+              "<EXCHANGE>",
               "--queue",
-              "case.rh.case",
+              "<QUEUE NAME>",
               "--predeclared"
             ]
 #          # Resource limits/requests?
