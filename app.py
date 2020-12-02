@@ -22,27 +22,7 @@ ESTAB_TYPES = ['HALL OF RESIDENCE', 'CARE HOME', 'HOSPITAL', 'HOSPICE', 'MENTAL 
                'TRANSIENT PERSONS', 'MIGRANT WORKERS', 'MILITARY US SFA']
 
 message_rate = int(Config.MESSAGE_RATE)  # Per second
-message_settings = {
-    "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": Config.CHAOS},
-    "SURVEY_LAUNCHED": {"weight": 35, "chaos": Config.CHAOS},
-    "RESPONSE_RECEIVED": {"weight": 16, "chaos": Config.CHAOS},
-    "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": Config.CHAOS},
-    "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": Config.CHAOS},
-    "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": Config.CHAOS},
-    "REFUSAL_RECEIVED": {"weight": 1, "chaos": Config.CHAOS},
-    "FULFILMENT_REQUESTED.sms": {"weight": 1, "chaos": Config.CHAOS},
-    "FULFILMENT_REQUESTED.print": {"weight": 1, "chaos": Config.CHAOS},
-    "FULFILMENT_REQUESTED.EQ.sms": {"weight": 1, "chaos": Config.CHAOS},
-    "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": Config.CHAOS},
-    "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": Config.CHAOS},
-    "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": Config.CHAOS},
-    "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": Config.CHAOS},
-    "ADDRESS_NOT_VALID": {"weight": 1, "chaos": Config.CHAOS},
-    "ADDRESS_TYPE_CHANGED": {"weight": 1, "chaos": Config.CHAOS},
-    "ADDRESS_MODIFIED": {"weight": 1, "chaos": Config.CHAOS},
-    "PRINT_CASE_SELECTED": {"weight": 1, "chaos": Config.CHAOS},
-    "QUESTIONNAIRE_LINKED": {"weight": 1, "chaos": Config.CHAOS}
-}
+message_settings = Config.MESSAGE_SETTINGS
 message_type_randomiser = []
 
 test_cases = []

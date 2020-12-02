@@ -36,3 +36,25 @@ class Config:
     API_CALL_RATE = os.getenv("API_CALL_RATE", "1000")  # Calls per second
     TOTAL_API_CALLS = os.getenv("TOTAL_API_CALLS", "10000")
     CASE_API_URL = os.getenv("CASE_API_URL", "http://case-api:80")
+
+    MESSAGE_SETTINGS = {
+        "RESPONDENT_AUTHENTICATED": {"weight": 35, "chaos": CHAOS},
+        "SURVEY_LAUNCHED": {"weight": 35, "chaos": CHAOS},
+        "RESPONSE_RECEIVED": {"weight": 16, "chaos": CHAOS},
+        "RESPONSE_RECEIVED.pqrs": {"weight": 1, "chaos": CHAOS},
+        "RESPONSE_RECEIVED.qm": {"weight": 1, "chaos": CHAOS},
+        "RESPONSE_RECEIVED.qm_blanks": {"weight": 1, "chaos": CHAOS},
+        "REFUSAL_RECEIVED": {"weight": 1, "chaos": CHAOS},
+        "FULFILMENT_REQUESTED.sms": {"weight": 1, "chaos": CHAOS},
+        "FULFILMENT_REQUESTED.print": {"weight": 1, "chaos": CHAOS},
+        "FULFILMENT_REQUESTED.EQ.sms": {"weight": 1, "chaos": CHAOS},
+        "FULFILMENT_REQUESTED.EQ.print": {"weight": 1, "chaos": CHAOS},
+        "UNDELIVERED_MAIL_REPORTED": {"weight": 1, "chaos": CHAOS},
+        "FULFILMENT_CONFIRMED": {"weight": 1, "chaos": CHAOS},
+        "NEW_ADDRESS_REPORTED": {"weight": 1, "chaos": CHAOS},
+        "ADDRESS_NOT_VALID": {"weight": 1, "chaos": CHAOS},
+        "ADDRESS_TYPE_CHANGED": {"weight": 1, "chaos": CHAOS},
+        "ADDRESS_MODIFIED": {"weight": 1, "chaos": CHAOS},
+        "PRINT_CASE_SELECTED": {"weight": 1, "chaos": CHAOS},
+        "QUESTIONNAIRE_LINKED": {"weight": 1, "chaos": CHAOS}
+    }
